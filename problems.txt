@@ -1,0 +1,10 @@
+i ate an apple
+    Q: how do i know this action "ate" is associated with object "apple"
+    A: for now we can hard code it, eating as an action interface references an object, which
+        returns its visuals, we then match the visuals on an object and reference that object
+        in the action, and that object type in the action type
+    Q: how do i know this action cannot be done without the presence of an abstract apple
+    A: again, hard code it, every action that requires an object, assume the action type requires
+        the object type
+
+too many concepts in mind -> need to collapse

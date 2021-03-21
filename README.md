@@ -1,1 +1,2 @@
-# sapphire_core
+## Installation
+go get -u gonum.org/v1/gonum/...
