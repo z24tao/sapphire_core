@@ -7,9 +7,10 @@ const (
 
 type unit interface {
 	_id() int
-	_type() int
+	getType() int
 	_board() *board
 	_color() int
 	_shape() int
+	_name() string
 	_eatenResponse() []interface{}
 }

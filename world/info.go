@@ -18,10 +18,11 @@ const (
 )
 
 type Image struct {
-	XDist int
-	ZDist int
-	Color int
-	Shape int
+	XDist     int
+	ZDist     int
+	Color     int
+	Shape     int
+	DebugName string
 }
 
 var Colors = []int{
@@ -43,5 +44,5 @@ var Shapes = []int{
 
 type Taste struct {
 	Nutrition int
-	Sweet bool
+	Sweet     bool
 }

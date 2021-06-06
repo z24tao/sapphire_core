@@ -1,2 +1,3 @@
-## Installation
-go get -u gonum.org/v1/gonum/...
+## Start server
+go run main.go
+

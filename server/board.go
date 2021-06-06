@@ -1,18 +1,10 @@
 package server
 
-import "net/http"
-import "../world"
+import (
+	"github.com/z24tao/sapphire_core/world"
+	"net/http"
+)
 
 func boardHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		getBoardHandler(w, r)
-	default:
-		w.WriteHeader(http.StatusMethodNotAllowed)
-	}
-}
-
-func getBoardHandler(w http.ResponseWriter, r *http.Request) {
-	data := world.GetDefaultBoardState()
-	serveData(w, data)
+	serveData(w, world.GetDefaultBoardState())
 }

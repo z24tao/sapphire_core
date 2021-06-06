@@ -1,6 +1,9 @@
 package world
 
+import "fmt"
+
 type AtomicActionInterface struct {
+	Name        string
 	Enabled     bool
 	ObjectImage Image
 	Step        func() []interface{}
@@ -9,7 +12,11 @@ type AtomicActionInterface struct {
 type AtomicActionInterfaceChange struct {
 	// TODO rename this to sound more like an info
 	Interface *AtomicActionInterface
-	Enabling bool
+	Enabling  bool
+}
+
+func (a *AtomicActionInterfaceChange) ToString() string {
+	return "AtomicActionInterfaceChange " + a.Interface.Name + ", Enabling: " + fmt.Sprint(a.Enabling)
 }
 
 const (
@@ -26,21 +33,22 @@ var unitAAIAction = make(map[*AtomicActionInterface]int)
 func NewAAIs(unitId int) map[*AtomicActionInterface]bool {
 	basicAAIs := make(map[*AtomicActionInterface]bool)
 
-	basicAAIs[newAAI(unitId, aaiXPos)] = true
-	basicAAIs[newAAI(unitId, aaiXNeg)] = true
-	basicAAIs[newAAI(unitId, aaiZPos)] = true
-	basicAAIs[newAAI(unitId, aaiZNeg)] = true
-	basicAAIs[newAAI(unitId, aaiEat)] = true
+	basicAAIs[newAAI(unitId, aaiXPos, "right")] = true
+	basicAAIs[newAAI(unitId, aaiXNeg, "left")] = true
+	basicAAIs[newAAI(unitId, aaiZPos, "front")] = true
+	basicAAIs[newAAI(unitId, aaiZNeg, "back")] = true
+	basicAAIs[newAAI(unitId, aaiEat, "eat")] = true
 
 	unitAAI[unitId] = basicAAIs
 	defaultBoard.updateAAI(units[unitId])
 	return basicAAIs
 }
 
-func newAAI(unitId, actionId int) *AtomicActionInterface {
+func newAAI(unitId, actionId int, name string) *AtomicActionInterface {
 	aai := &AtomicActionInterface{
+		Name:    name,
 		Enabled: true,
-		Step: newAAIStep(unitId, actionId),
+		Step:    newAAIStep(unitId, actionId),
 	}
 
 	unitAAIAction[aai] = actionId
@@ -79,7 +87,7 @@ func newAAIStep(unitId, actionId int) func() []interface{} {
 	if actionId == aaiEat {
 		return func() []interface{} {
 			response := defaultBoard.unitEat(units[unitId])
-			response = append(response, defaultBoard.updateAAI(units[unitId]))
+			response = append(response, defaultBoard.updateAAI(units[unitId])...)
 			return response
 		}
 	}

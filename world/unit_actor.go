@@ -1,15 +1,16 @@
 package world
 
 type actorUnit struct {
-	__id int
+	__id    int
 	__board *board
+	__name  string
 }
 
 func (u *actorUnit) _id() int {
 	return u.__id
 }
 
-func (u *actorUnit) _type() int {
+func (u *actorUnit) getType() int {
 	return unitTypeActor
 }
 
@@ -25,6 +26,10 @@ func (u *actorUnit) _shape() int {
 	return rectangle
 }
 
+func (u *actorUnit) _name() string {
+	return u.__name
+}
+
 func (u *actorUnit) _eatenResponse() []interface{} {
 	return []interface{}{}
 }
@@ -34,10 +39,11 @@ func NewActor() int {
 	a := &actorUnit{
 		__id:    id,
 		__board: defaultBoard,
+		__name:  "actor",
 	}
 
 	units[id] = a
-	if !defaultBoard.addUnit(a) {
+	if !defaultBoard.addUnitAt(a, [2]int{2, 2}) {
 		panic("board out of space")
 	}
 

@@ -8,7 +8,12 @@ import (
 
 func init() {
 	http.HandleFunc("/board", boardHandler)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	go startServer()
+}
+
+func startServer() {
+	err := http.ListenAndServe(":8080", nil)
+	log.Fatal(err)
 }
 
 func serveData(w http.ResponseWriter, data interface{}) {
