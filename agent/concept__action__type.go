@@ -8,11 +8,15 @@ import (
 const (
 	actionConditionTypeStart = iota
 	actionConditionTypeStop
+	actionConditionTypeObservedAtStart // conditions observed when action is started, used to train hypothesis
+	actionConditionTypeObservedAtDone  // conditions observed when action is done, used to train hypothesis
 )
 
 var actionConditionTypes = map[int]string{
-	actionConditionTypeStart: "actionConditionTypeStart",
-	actionConditionTypeStop:  "actionConditionTypeStop",
+	actionConditionTypeStart:           "actionConditionTypeStart",
+	actionConditionTypeStop:            "actionConditionTypeStop",
+	actionConditionTypeObservedAtStart: "actionConditionTypeObservedAtStart",
+	actionConditionTypeObservedAtDone:  "actionConditionTypeObservedAtDone",
 }
 
 type actionType interface {
@@ -21,14 +25,17 @@ type actionType interface {
 	getConditions() map[int]map[condition]bool // condition type enum -> set of conditions
 	getCausations() map[*causation]bool        // set of causations
 	getAttempts() int
+	getHypotheses() (map[condition]map[change]*hypothesis, map[change]map[condition]*hypothesis)
 }
 
 // the purpose of this struct is to remove duplicated code from implementations
 type commonActionType struct {
 	*commonConcept
-	conditions map[int]map[condition]bool
-	causations map[*causation]bool
-	attempts   int
+	conditions         map[int]map[condition]bool
+	causations         map[*causation]bool
+	attempts           int
+	forwardHypotheses  map[condition]map[change]*hypothesis // hypotheses of "this condition would cause this change"
+	backwardHypotheses map[change]map[condition]*hypothesis // hypotheses of "this change is caused by this condition"
 }
 
 func (t *commonActionType) toString(indent string, _ bool) string {
@@ -60,12 +67,18 @@ func (t *commonActionType) getAttempts() int {
 	return t.attempts
 }
 
+func (t *commonActionType) getHypotheses() (map[condition]map[change]*hypothesis, map[change]map[condition]*hypothesis) {
+	return t.forwardHypotheses, t.backwardHypotheses
+}
+
 func newCommonActionType() *commonActionType {
 	t := &commonActionType{
-		commonConcept: newCommonConcept(),
-		conditions:    map[int]map[condition]bool{}, // condition type enum -> set of conditions
-		causations:    map[*causation]bool{},        // set of causations
-		attempts:      0,
+		commonConcept:      newCommonConcept(),
+		conditions:         map[int]map[condition]bool{}, // condition type enum -> set of conditions
+		causations:         map[*causation]bool{},        // set of causations
+		attempts:           0,
+		forwardHypotheses:  map[condition]map[change]*hypothesis{},
+		backwardHypotheses: map[change]map[condition]*hypothesis{},
 	}
 
 	for actionConditionType := range actionConditionTypes {

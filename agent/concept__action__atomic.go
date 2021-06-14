@@ -68,7 +68,7 @@ func (a *atomicAction) toString(indent string, indentFirstLine bool) string {
 	if indentFirstLine {
 		result += indent
 	}
-	result += fmt.Sprintf("atomicAction: %s", a.actionType.aai.Name)
+	result += fmt.Sprintf("atomicAction: %s,", a.actionType.aai.Name)
 	result += fmt.Sprintf(" state: %s", actionStates[a.state])
 	return result
 }

@@ -12,8 +12,7 @@ func init() {
 }
 
 func startServer() {
-	err := http.ListenAndServe(":8080", nil)
-	log.Fatal(err)
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 func serveData(w http.ResponseWriter, data interface{}) {

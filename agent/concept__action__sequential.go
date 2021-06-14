@@ -5,9 +5,9 @@ import "fmt"
 type sequentialAction struct {
 	*commonAction
 	actionType *sequentialActionType
-	first action
-	next action
-	doneFirst bool
+	first      action
+	next       action
+	doneFirst  bool
 }
 
 func (a *sequentialAction) toString(indent string, indentFirstLine bool) string {
@@ -107,6 +107,3 @@ func (a *sequentialAction) stop(agent *Agent) bool {
 
 	return true
 }
-
-
-

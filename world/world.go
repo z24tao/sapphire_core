@@ -11,7 +11,7 @@ func newUnitId() int {
 }
 
 func Look(unitId int) []*Image {
-	currTime ++
+	currTime++
 	if currTimeEvents, seen := scheduledEvents[currTime]; seen {
 		for _, currTimeEvent := range currTimeEvents {
 			currTimeEvent()

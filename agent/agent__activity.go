@@ -17,9 +17,9 @@ func newActivity(a *Agent) *activity {
 	}
 
 	for aai := range newAAIs {
-		aat := newAtomicActionType(aai)
+		aat := a.newAtomicActionType(aai)
 		ac.atomicActionInterfaces[aai] = aat
-		a.mind.addItem(aat, 1)
+		a.mind.addItem(aat, 1.0)
 	}
 	a.mind.mergeNewThoughts()
 

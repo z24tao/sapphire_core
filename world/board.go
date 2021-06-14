@@ -29,7 +29,6 @@ func (b *board) addUnitAt(u unit, pos [2]int) bool {
 	if t.occupants[u.getType()] == nil {
 		t.occupants[u.getType()] = u
 		b.units[u] = pos
-		fmt.Println(b.units[u][0], b.units[u][1])
 		return true
 	}
 
@@ -91,7 +90,7 @@ func (b *board) unitEat(u unit) []interface{} {
 		fmt.Println("ate apple at", b.units[u][0], b.units[u][1])
 		response = eatenItem._eatenResponse()
 		b.removeUnit(eatenItem)
-		scheduleEvent(currTime + 2, addRandomApple)
+		scheduleEvent(currTime+2, addRandomApple)
 	}
 	return response
 }

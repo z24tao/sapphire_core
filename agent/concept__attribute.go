@@ -1,5 +1,7 @@
 package agent
 
+import "github.com/z24tao/sapphire_core/world"
+
 /*
 	In the current version, instead of being implemented as a concept, attributes are simply
 	kept as constants for simplicity.
@@ -34,12 +36,13 @@ var attrTypes = map[int]string{
 	attrTypeColor:     "color",
 	attrTypeShape:     "shape",
 	attrTypeDirection: "direction",
+	attrTypeDistance: "distance",
 }
 
 // type -> value -> name
 var attrVals = map[int]map[int]string{
-	attrTypeColor: {},
-	attrTypeShape: {},
+	attrTypeColor: world.Colors,
+	attrTypeShape: world.Shapes,
 	attrTypeDirection: {
 		directionOrigin:   "origin",
 		directionXPos:     "right",
@@ -53,12 +56,12 @@ var attrVals = map[int]map[int]string{
 	},
 }
 
-var qualitativeAttrTypes = map[int]bool {
-	attrTypeColor: true,
-	attrTypeShape: true,
+var qualitativeAttrTypes = map[int]bool{
+	attrTypeColor:     true,
+	attrTypeShape:     true,
 	attrTypeDirection: true,
 }
 
-var quantitativeAttrTypes = map[int]bool {
+var quantitativeAttrTypes = map[int]bool{
 	attrTypeDistance: true,
 }

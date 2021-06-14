@@ -29,4 +29,3 @@ func (a *emptyAction) step(*Agent) {
 func (a *emptyAction) stop(agent *Agent) bool {
 	return a.start(agent)
 }
-

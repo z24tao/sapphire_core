@@ -31,13 +31,15 @@ type action interface {
 	stop(agent *Agent) bool // returns success
 	getState() int
 	getOutcome() *actionOutcome
+	getPreconditions() map[condition]bool
 }
 
 // the purpose of this struct is to remove duplicated code from implementations
 type commonAction struct {
 	*commonConcept
-	state   int
-	outcome *actionOutcome
+	state         int
+	outcome       *actionOutcome
+	preconditions map[condition]bool
 }
 
 func (a *commonAction) getState() int {
@@ -51,11 +53,16 @@ func (a *commonAction) getOutcome() *actionOutcome {
 	return a.outcome
 }
 
+func (a *commonAction) getPreconditions() map[condition]bool {
+	return a.preconditions
+}
+
 // action instances are constructed in idle state with nil outcome
 func newCommonAction() *commonAction {
 	return &commonAction{
 		commonConcept: newCommonConcept(),
 		state:         actionStateIdle,
 		outcome:       nil,
+		preconditions: map[condition]bool{},
 	}
 }

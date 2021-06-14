@@ -13,6 +13,11 @@ func (t *emptyActionType) toString(indent string, indentFirstLine bool) string {
 	return result
 }
 
+func (t *emptyActionType) match(other singletonConcept) bool {
+	_, ok := other.(*emptyActionType)
+	return ok
+}
+
 func (t *emptyActionType) instantiate() concept {
 	return &emptyAction{
 		commonAction: newCommonAction(),

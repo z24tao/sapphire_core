@@ -6,8 +6,10 @@ import (
 
 type agentChange struct {
 	*commonChange
-	t        int
-	deltaVal int
+	stateType       int
+	deltaVal        int
+	beforeCondition *agentCondition
+	afterCondition  *agentCondition
 }
 
 func (c *agentChange) toString(indent string, indentFirstLine bool) string {
@@ -15,16 +17,16 @@ func (c *agentChange) toString(indent string, indentFirstLine bool) string {
 	if indentFirstLine {
 		result += indent
 	}
-	result += fmt.Sprintf("agentChange: %s", agentStateTypeNames[c.t])
+	result += fmt.Sprintf("agentChange: %s", agentStateTypes[c.stateType])
 	result += fmt.Sprintf(" [%d],", c.deltaVal)
 	result += fmt.Sprintf(" value: %.2f", c.getValue())
 	return result
 }
 
-func (c *agentChange) match(other change) bool {
+func (c *agentChange) match(other singletonConcept) bool {
 	o, ok := other.(*agentChange)
 
-	return ok && c.t == o.t && c.deltaVal == o.deltaVal
+	return ok && c.stateType == o.stateType && c.deltaVal == o.deltaVal
 }
 
 // agentChange value is defined, cannot be set
@@ -33,24 +35,44 @@ func (c *agentChange) setValue(float64) {
 }
 
 func (c *agentChange) getValue() float64 {
-	if experienceType, seen := agentExperienceTypes[c.t]; seen {
+	if experienceType, seen := agentExperienceInfos[c.stateType]; seen {
 		return float64(experienceType.value)
 	}
 
-	stateType := agentStateTypes[c.t]
+	stateType := agentStateInfos[c.stateType]
 	return float64(c.deltaVal * stateType.pointValue)
 }
 
 // agentChange does not require condition therefore does not require before and after
 func (c *agentChange) before() condition {
-	return nil
+	return c.beforeCondition
 }
 
 func (c *agentChange) after() condition {
-	return nil
+	return c.afterCondition
 }
 
 // agent changes cannot proceed each other
 func (c *agentChange) precedes(change) bool {
 	return false
+}
+
+func (a *Agent) newAgentChange(stateType, deltaVal int) *agentChange {
+	c := &agentChange{
+		commonChange: newCommonChange(),
+		stateType:    stateType,
+		deltaVal:     deltaVal,
+	}
+
+	beforeCondition := a.newAgentCondition(stateType, deltaVal >= 0)
+	afterCondition := a.newAgentCondition(stateType, deltaVal < 0)
+	beforeCondition.addAssoc(c, 0.5)
+	c.addAssoc(beforeCondition, 0.5)
+	afterCondition.addAssoc(c, 0.5)
+	c.addAssoc(afterCondition, 0.5)
+	c.beforeCondition = beforeCondition
+	c.afterCondition = afterCondition
+
+	c = a.memory.add(c).(*agentChange)
+	return c
 }

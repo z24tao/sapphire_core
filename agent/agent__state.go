@@ -5,7 +5,7 @@ type agentState struct {
 	states map[int]int
 }
 
-type agentStateType struct {
+type agentStateInfo struct {
 	stateType  int
 	threshold  int
 	pointValue int
@@ -13,29 +13,25 @@ type agentStateType struct {
 }
 
 // very basic design, assume every experience has a set duration and it does not affect the value
-type agentExperienceType struct {
+type agentExperienceInfo struct {
 	expType  int
 	duration int
 	value    int
 }
 
-func (s *agentState) _update(key, value int) {
-	var c *agentChange
+func (s *agentState) update(key, value int) {
+	c := s.agent.newAgentChange(key, value)
 
-	if _, seen := agentStateTypes[key]; seen {
-		c = &agentChange{
-			t:        key,
-			deltaVal: value,
-		}
-
+	if info, seen := agentStateInfos[key]; seen {
 		s.states[key] += value
-	} else if experienceType, seen := agentExperienceTypes[key]; seen {
-		c = &agentChange{
-			t:        key,
-			deltaVal: value,
+		if s.states[key] > info.threshold {
+			s.agent.mind.addItem(s.agent.newAgentCondition(key, true), 1.0)
 		}
-
+	} else if experienceType, seen := agentExperienceInfos[key]; seen {
 		s.states[key] += experienceType.duration
+		if s.states[key] > 0 {
+			s.agent.mind.addItem(s.agent.newAgentCondition(key, true), 1.0)
+		}
 	} else {
 		return
 	}
@@ -46,11 +42,11 @@ func (s *agentState) _update(key, value int) {
 func newAgentState(a *Agent) *agentState {
 	states := make(map[int]int)
 
-	for stateType := range agentStateTypes {
+	for stateType := range agentStateInfos {
 		states[stateType] = 30
 	}
 
-	for experienceType := range agentExperienceTypes {
+	for experienceType := range agentExperienceInfos {
 		states[experienceType] = 0
 	}
 
@@ -65,12 +61,12 @@ const (
 	agentExperienceTypeSweet
 )
 
-var agentStateTypeNames = map[int]string{
+var agentStateTypes = map[int]string{
 	agentStateTypeHunger:     "hunger",
 	agentExperienceTypeSweet: "sweet",
 }
 
-var agentStateTypes = map[int]*agentStateType{
+var agentStateInfos = map[int]*agentStateInfo{
 	agentStateTypeHunger: {
 		stateType:  agentStateTypeHunger,
 		threshold:  50,
@@ -79,7 +75,7 @@ var agentStateTypes = map[int]*agentStateType{
 	},
 }
 
-var agentExperienceTypes = map[int]*agentExperienceType{
+var agentExperienceInfos = map[int]*agentExperienceInfo{
 	agentExperienceTypeSweet: {
 		expType:  agentExperienceTypeSweet,
 		duration: 10,

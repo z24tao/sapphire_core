@@ -22,7 +22,7 @@ func (o *simpleObject) getType() objectType {
 
 // attrs: attribute type -> attribute value
 // updates object attributes, construct and return appropriate changes
-func (o *simpleObject) setAttrs(attrs map[int]int) []change {
+func (o *simpleObject) setAttrs(a *Agent, attrs map[int]int) []change {
 	var changes []change
 
 	for newType, newVal := range attrs {
@@ -43,12 +43,12 @@ func (o *simpleObject) setAttrs(attrs map[int]int) []change {
 		// for existing attribute type, record appropriate change
 		// if attribute type is qualitative (discrete), record qualitative change
 		if qualitativeAttrTypes[newType] {
-			changes = append(changes, newQualitativeAttributeChange(o.getType(), newType, oldVal, newVal))
+			changes = append(changes, a.newQualitativeAttributeChange(o.getType(), newType, oldVal, newVal))
 		}
 
 		// if attribute type is quantitative (continuous), record quantitative change
 		if quantitativeAttrTypes[newType] {
-			changes = append(changes, newQuantitativeAttributeChange(o.getType(), newType, oldVal < newVal))
+			changes = append(changes, a.newQuantitativeAttributeChange(o.getType(), newType, oldVal < newVal))
 		}
 	}
 

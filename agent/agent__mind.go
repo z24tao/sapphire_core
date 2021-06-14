@@ -5,7 +5,7 @@ import (
 	"sort"
 )
 
-const mindCapacity = 10
+const mindCapacity = 30
 
 type mind struct {
 	thoughts    map[concept]float64
@@ -15,7 +15,6 @@ type mind struct {
 
 func (m *mind) objects() []object {
 	var items []object
-
 	for t := range m.thoughts {
 		if o, ok := t.(object); ok {
 			items = append(items, o)
@@ -85,7 +84,7 @@ func (m *mind) spawnSpontaneousThoughts() {
 func (m *mind) mergeNewThoughts() {
 	newThoughts := make(map[concept]float64)
 	for newConcept, newImportances := range m.newThoughts {
-		newImportances = append(newImportances, m.thoughts[newConcept]) // add old importance
+		newImportances = append(newImportances, m.thoughts[newConcept]*0.8) // add old importance
 		unimportance := 1.0
 		for _, importance := range newImportances {
 			unimportance *= 1 - importance
@@ -94,6 +93,7 @@ func (m *mind) mergeNewThoughts() {
 	}
 
 	m.thoughts = newThoughts
+	m.newThoughts = map[concept][]float64{}
 	m.filterThoughts()
 }
 

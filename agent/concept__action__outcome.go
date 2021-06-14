@@ -5,10 +5,10 @@ when a child action completes, its outcome field is populated for the parent act
   its execution
 */
 type actionOutcome struct {
-	shouldReturn bool
+	shouldReturn   bool
 	shouldContinue bool
-	shouldBreak bool
-	exception bool
+	shouldBreak    bool
+	exception      bool
 }
 
 func newActionOutcome(shouldReturn, shouldContinue, shouldBreak, exception bool) *actionOutcome {

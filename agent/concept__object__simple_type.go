@@ -1,6 +1,8 @@
 package agent
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type simpleObjectType struct {
 	*commonObjectType
@@ -23,9 +25,12 @@ func (t *simpleObjectType) instantiate() concept {
 	}
 }
 
-func newSimpleObjectType(debugName string) *simpleObjectType {
-	return &simpleObjectType{
+func (a *Agent) newSimpleObjectType(debugName string) *simpleObjectType {
+	t := &simpleObjectType{
 		commonObjectType: newCommonObjectType(),
 		debugName:        debugName,
 	}
+
+	t = a.memory.add(t).(*simpleObjectType)
+	return t
 }

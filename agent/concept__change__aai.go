@@ -34,15 +34,20 @@ func (c *aaiChange) precedes(change) bool {
 	return false
 }
 
-func (c *aaiChange) match(other change) bool {
+func (c *aaiChange) match(other singletonConcept) bool {
 	otherChange, ok := other.(*aaiChange)
 	return ok && c.actionType == otherChange.actionType && c.enabling == otherChange.enabling
 }
 
-func newAAIChange(t *atomicActionType, enabling bool) *aaiChange {
-	return &aaiChange{
+func (a *Agent) newAAIChange(t *atomicActionType, enabling bool) *aaiChange {
+	c := &aaiChange{
 		commonChange: newCommonChange(),
 		actionType:   t,
 		enabling:     enabling,
 	}
+
+	c.addAssoc(t, 0.5)
+	t.addAssoc(c, 0.5)
+	c = a.memory.add(c).(*aaiChange)
+	return c
 }

@@ -7,6 +7,7 @@ type quantitativeAttributeChange struct {
 	objectType objectType
 	attrType   int
 	increase   bool
+	// TODO add scale e.g. 10^0, 10^1, etc.
 }
 
 func (c *quantitativeAttributeChange) toString(indent string, indentFirstLine bool) string {
@@ -14,7 +15,7 @@ func (c *quantitativeAttributeChange) toString(indent string, indentFirstLine bo
 	if indentFirstLine {
 		result += indent
 	}
-	result += fmt.Sprintf("qualitativeAttributeChange: %s", attrTypes[c.attrType])
+	result += fmt.Sprintf("quantitativeAttributeChange: %s", attrTypes[c.attrType])
 
 	changeText := "decrease"
 	if c.increase {
@@ -25,13 +26,13 @@ func (c *quantitativeAttributeChange) toString(indent string, indentFirstLine bo
 	return result
 }
 
-func (c *quantitativeAttributeChange) match(other change) bool {
+func (c *quantitativeAttributeChange) match(other singletonConcept) bool {
 	o, ok := other.(*quantitativeAttributeChange)
 	if !ok {
 		return false
 	}
 
-	return c.objectType == o.objectType && c.attrType == o.attrType && c.increase == o.increase
+	return c.objectType.match(o.objectType) && c.attrType == o.attrType && c.increase == o.increase
 }
 
 func (c *quantitativeAttributeChange) before() condition {
@@ -46,11 +47,14 @@ func (c *quantitativeAttributeChange) precedes(other change) bool {
 	return c.match(other)
 }
 
-func newQuantitativeAttributeChange(objType objectType, attrType int, increase bool) *quantitativeAttributeChange {
-	return &quantitativeAttributeChange{
+func (a *Agent) newQuantitativeAttributeChange(t objectType, attrType int, increase bool) *quantitativeAttributeChange {
+	c := &quantitativeAttributeChange{
 		commonChange: newCommonChange(),
-		objectType:   objType,
+		objectType:   t,
 		attrType:     attrType,
 		increase:     increase,
 	}
+
+	c = a.memory.add(c).(*quantitativeAttributeChange)
+	return c
 }

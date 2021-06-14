@@ -2,6 +2,7 @@ package agent
 
 import (
 	"fmt"
+	"github.com/z24tao/sapphire_core/util"
 	"github.com/z24tao/sapphire_core/world"
 	"math/rand"
 )
@@ -14,6 +15,7 @@ type Agent struct {
 	state    *agentState
 	mind     *mind
 	activity *activity
+	memory   *memory
 	unitId   int
 }
 
@@ -22,18 +24,20 @@ func (a *Agent) TimeStep() {
 	a.observe() // observe and learn
 	a.act()     // think and act
 	fmt.Println(a.mind.toString())
+	//fmt.Println(hypothesisCount, "hypotheses")
 }
 
 func (a *Agent) updateState() {
 	for stateKey, stateVal := range a.state.states {
-		if stateType, seen := agentStateTypes[stateKey]; seen {
-			a.state.states[stateKey] += stateType.perTurn
+		if stateInfo, seen := agentStateInfos[stateKey]; seen {
+			a.state.states[stateKey] += stateInfo.perTurn
 		} else if stateVal > 0 { // experience fades away if remaining number of turns is positive
 			a.state.states[stateKey]--
 		}
 	}
 }
 
+// observe section
 func (a *Agent) observe() {
 	imgs := world.Look(a.unitId)
 	for _, img := range imgs {
@@ -56,6 +60,7 @@ func (a *Agent) identifyAttributes(img *world.Image) map[int]int {
 
 	attrs[attrTypeColor] = img.Color
 	attrs[attrTypeShape] = img.Shape
+	attrs[attrTypeDistance] = util.Abs(img.XDist) + util.Abs(img.ZDist)
 
 	if img.XDist == 0 && img.ZDist == 0 {
 		attrs[attrTypeDirection] = directionOrigin
@@ -84,7 +89,7 @@ func (a *Agent) identifyObjectInst(attrs map[int]int) object {
 	mindObjs := a.mind.objects()
 	for _, obj := range mindObjs {
 		if obj.match(attrs, visualAttrTypes) {
-			changes := obj.setAttrs(attrs)
+			changes := obj.setAttrs(a, attrs)
 			a.recordActionChanges(changes)
 			return obj
 		}
@@ -104,8 +109,12 @@ func (a *Agent) createObject(attrs map[int]int, debugName string) {
 
 func (a *Agent) identifyObjectType(attrs map[int]int) objectType {
 	mindObjTypes := a.mind.objectTypes()
+	challengeObjType := a.newSimpleObjectType("")
+	challengeObjType.attrs = attrs
+	defer a.memory.remove(challengeObjType)
+
 	for _, objType := range mindObjTypes {
-		if objType.match(attrs, visualAttrTypes) {
+		if objType.match(challengeObjType) {
 			return objType
 		}
 	}
@@ -114,8 +123,7 @@ func (a *Agent) identifyObjectType(attrs map[int]int) objectType {
 }
 
 func (a *Agent) createObjectType(attrs map[int]int, debugName string) objectType {
-	objType := newSimpleObjectType(debugName)
-
+	objType := a.newSimpleObjectType(debugName)
 	for attrType, attrVal := range attrs {
 		if visualAttrTypes[attrType] {
 			objType.attrs[attrType] = attrVal
@@ -128,11 +136,12 @@ func (a *Agent) createObjectType(attrs map[int]int, debugName string) objectType
 
 func (a *Agent) createObjectInst(attrs map[int]int, newType objectType) object {
 	newInst := newType.instantiate().(object)
-	newInst.setAttrs(attrs)
+	newInst.setAttrs(a, attrs)
 	a.mind.addItem(newInst, imageDefaultImportance)
 	return newInst
 }
 
+// act section
 func (a *Agent) act() {
 	// assumes every object visited during observe is already in mind with importance
 	// uses object information and changes to update activity
@@ -197,6 +206,14 @@ func (a *Agent) startNewAction() {
 
 	newAction := bestActionType.instantiate().(action)
 	a.activity.activeActions = append(a.activity.activeActions, newAction)
+	a.mind.addItem(bestActionType, 1.0)
+
+	// add pre-action conditions for hypothesis training
+	for cond := range a.getConditions() {
+		preActionConditions := newAction.getType().getConditions()[actionConditionTypeObservedAtStart]
+		preActionConditions[cond] = true
+		newAction.getPreconditions()[cond] = true
+	}
 }
 
 func (a *Agent) stepActions() {
@@ -236,7 +253,9 @@ func (a *Agent) updateActionCausations() {
 
 			matched := false
 			actionCausations := ac.getType().getCausations()
+			//fmt.Println("actionCausations", actionCausations)
 			for currCausation := range actionCausations {
+				//fmt.Println("match", currCausation.change.match(c))
 				if currCausation.change.match(c) {
 					matched = true
 					currCausation.occurrences++
@@ -251,7 +270,85 @@ func (a *Agent) updateActionCausations() {
 		a.mind.addItem(c, changeDefaultImportance)
 	}
 
+	for _, ac := range a.activity.activeActions {
+		if ac.getState() != actionStateDone {
+			continue
+		}
+
+		a.buildActionHypotheses(ac)
+		a.evaluateActionHypotheses(ac)
+	}
+
 	a.mind.changes = make([]change, 0)
+}
+
+func (a *Agent) buildActionHypotheses(ac action) {
+	forwardHypotheses, backwardHypotheses := ac.getType().getHypotheses()
+	preconditions := ac.getPreconditions()
+	for cond := range preconditions {
+		if _, seen := forwardHypotheses[cond]; !seen {
+			forwardHypotheses[cond] = map[change]*hypothesis{}
+		}
+	}
+
+	for _, currChange := range a.mind.changes {
+		if _, seen := backwardHypotheses[currChange]; !seen {
+			backwardHypotheses[currChange] = map[condition]*hypothesis{}
+		}
+	}
+
+	for cond := range preconditions {
+		for _, currChange := range a.mind.changes {
+			if _, seen := forwardHypotheses[cond][currChange]; !seen {
+				forwardHypotheses[cond][currChange] = newHypothesis(cond, currChange, true)
+			}
+
+			if _, seen := backwardHypotheses[currChange][cond]; !seen {
+				backwardHypotheses[currChange][cond] = newHypothesis(cond, currChange, false)
+			}
+		}
+	}
+
+	for cond := range preconditions {
+		for _, currHypothesis := range forwardHypotheses[cond] {
+			currHypothesis.conditionMatch++
+		}
+	}
+
+	for _, currChange := range a.mind.changes {
+		for _, currHypothesis := range backwardHypotheses[currChange] {
+			currHypothesis.changeMatch++
+		}
+	}
+
+	for cond := range preconditions {
+		for _, currChange := range a.mind.changes {
+			forwardHypotheses[cond][currChange].changeMatch++
+			forwardHypotheses[cond][currChange].bothMatch++
+
+			backwardHypotheses[currChange][cond].conditionMatch++
+			backwardHypotheses[currChange][cond].bothMatch++
+		}
+	}
+}
+
+func (a *Agent) evaluateActionHypotheses(ac action) {
+	if rand.Intn(10) == 0 {
+		fmt.Println("===== evaluate action hypotheses =====")
+		fmt.Println(ac.toString("", true))
+		fmt.Println()
+		forwardHypotheses, backwardHypotheses := ac.getType().getHypotheses()
+		for _, row := range forwardHypotheses {
+			for _, h := range row {
+				fmt.Println(h.toString("  ", true))
+			}
+		}
+		for _, row := range backwardHypotheses {
+			for _, h := range row {
+				fmt.Println(h.toString("  ", true))
+			}
+		}
+	}
 }
 
 func (a *Agent) processActionResponse(response interface{}) {
@@ -263,19 +360,45 @@ func (a *Agent) processActionResponse(response interface{}) {
 }
 
 func (a *Agent) processTaste(taste *world.Taste) {
-	a.state._update(agentStateTypeHunger, -taste.Nutrition)
+	a.state.update(agentStateTypeHunger, -taste.Nutrition)
 	if taste.Sweet {
-		a.state._update(agentExperienceTypeSweet, 0)
+		a.state.update(agentExperienceTypeSweet, 0)
 	}
 }
 
 func (a *Agent) processAAIChange(c *world.AtomicActionInterfaceChange) {
-	a.recordActionChanges([]change{newAAIChange(a.activity.atomicActionInterfaces[c.Interface], c.Enabling)})
+	a.recordActionChanges([]change{a.newAAIChange(a.activity.atomicActionInterfaces[c.Interface], c.Enabling)})
+}
+
+// state section
+func (a *Agent) getConditions() map[condition]bool {
+	result := map[condition]bool{}
+
+	for _, o := range a.mind.objects() {
+		for attrType, attrVal := range o.getAttrs() {
+			if _, seen := qualitativeAttrTypes[attrType]; !seen {
+				continue
+			}
+
+			result[a.newAttributeCondition(o.getType(), attrType, attrVal)] = true
+		}
+	}
+
+	for stateType, stateVal := range a.state.states {
+		if stateInfo, seen := agentStateInfos[stateType]; seen {
+			result[a.newAgentCondition(stateType, stateVal > stateInfo.threshold)] = true
+		} else {
+			result[a.newAgentCondition(stateType, stateVal > 0)] = true
+		}
+	}
+
+	return result
 }
 
 func NewAgent() *Agent {
 	a := &Agent{
 		mind:   newMind(),
+		memory: newMemory(),
 		unitId: world.NewActor(),
 	}
 

@@ -9,7 +9,7 @@ type conditionalAction struct {
 	actionType *conditionalActionType
 	passAction action
 	failAction action
-	passed bool
+	passed     bool
 }
 
 func (a *conditionalAction) toString(indent string, indentFirstLine bool) string {
@@ -93,4 +93,3 @@ func (a *conditionalAction) stop(agent *Agent) bool {
 
 	return true
 }
-

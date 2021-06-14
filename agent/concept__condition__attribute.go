@@ -1,6 +1,8 @@
 package agent
 
-import "fmt"
+import (
+	"fmt"
+)
 
 /*
   condition of observing an object with specific attribute
@@ -48,25 +50,27 @@ func (c *attributeCondition) isSatisfied(a *Agent) bool {
 	return false
 }
 
-func (c *attributeCondition) match(other condition) bool {
+func (c *attributeCondition) match(other singletonConcept) bool {
 	otherAttributeCondition, ok := other.(*attributeCondition)
 	if !ok {
 		return false
 	}
 
-	return c.objType == otherAttributeCondition.objType &&
+	return c.objType.match(otherAttributeCondition.objType) &&
 		c.attrType == otherAttributeCondition.attrType &&
 		c.attrVal == otherAttributeCondition.attrVal
 }
 
-func newAttributeCondition(objType objectType, attrType int, attrVal int) *attributeCondition {
+func (a *Agent) newAttributeCondition(objType objectType, attrType int, attrVal int) *attributeCondition {
 	c := &attributeCondition{
-		objType:  objType,
-		attrType: attrType,
-		attrVal:  attrVal,
+		commonConcept: newCommonConcept(),
+		objType:       objType,
+		attrType:      attrType,
+		attrVal:       attrVal,
 	}
 
-	c.commonConcept.assocs[objType] = 1.0
-
+	c.addAssoc(objType, 0.5)
+	objType.addAssoc(c, 0.5)
+	c = a.memory.add(c).(*attributeCondition)
 	return c
 }

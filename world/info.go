@@ -25,21 +25,21 @@ type Image struct {
 	DebugName string
 }
 
-var Colors = []int{
-	black,
-	white,
-	red,
-	orange,
-	yellow,
-	green,
-	blue,
-	purple,
+var Colors = map[int]string {
+	black: "black",
+	white: "white",
+	red: "red",
+	orange: "orange",
+	yellow: "yellow",
+	green: "green",
+	blue: "blue",
+	purple: "purple",
 }
 
-var Shapes = []int{
-	circle,
-	triangle,
-	rectangle,
+var Shapes = map[int]string {
+	circle: "circle",
+	triangle: "triangle",
+	rectangle: "rectangle",
 }
 
 type Taste struct {

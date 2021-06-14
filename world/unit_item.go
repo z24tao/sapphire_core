@@ -63,5 +63,5 @@ func newApple() int {
 
 func addRandomApple() {
 	xLen, zLen := len(defaultBoard.tiles), len(defaultBoard.tiles[0])
-	defaultBoard.addUnitAt(units[newApple()], [2]int{rand.Intn(xLen - 4) + 2, rand.Intn(zLen - 4) + 2})
+	defaultBoard.addUnitAt(units[newApple()], [2]int{rand.Intn(xLen-4) + 2, rand.Intn(zLen-4) + 2})
 }

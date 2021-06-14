@@ -2,7 +2,7 @@ package agent
 
 type change interface {
 	concept
-	match(other change) bool
+	match(other singletonConcept) bool
 	before() condition
 	after() condition
 	precedes(other change) bool

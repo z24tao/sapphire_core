@@ -13,8 +13,17 @@ type atomicActionType struct {
 func (t *atomicActionType) instantiate() concept {
 	return &atomicAction{
 		commonAction: newCommonAction(),
-		actionType: t,
+		actionType:   t,
 	}
+}
+
+func (t *atomicActionType) match(other singletonConcept) bool {
+	o, ok := other.(*atomicActionType)
+	if !ok {
+		return false
+	}
+
+	return t.aai == o.aai
 }
 
 func (t *atomicActionType) toString(indent string, indentFirstLine bool) string {
@@ -30,12 +39,13 @@ func (t *atomicActionType) toString(indent string, indentFirstLine bool) string 
 	return result
 }
 
-func newAtomicActionType(aai *world.AtomicActionInterface) *atomicActionType {
+func (a *Agent) newAtomicActionType(aai *world.AtomicActionInterface) *atomicActionType {
 	t := &atomicActionType{
 		commonActionType: newCommonActionType(),
 		aai:              aai,
 	}
 
-	t.conditions[actionConditionTypeStart][newAAICondition(t, true)] = true
+	t.conditions[actionConditionTypeStart][a.newAAICondition(t, true)] = true
+	t = a.memory.add(t).(*atomicActionType)
 	return t
 }

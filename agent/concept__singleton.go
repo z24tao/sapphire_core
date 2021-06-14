@@ -1,7 +1,6 @@
 package agent
 
-type condition interface {
+type singletonConcept interface {
 	concept
-	isSatisfied(a *Agent) bool
 	match(other singletonConcept) bool
 }

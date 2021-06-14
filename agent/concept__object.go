@@ -3,7 +3,7 @@ package agent
 /*
 	The object type is used to reference individual object instances, general knowledge on the object would be
 	controlled by the associated objectType.
- */
+*/
 type object interface {
 	concept
 	getType() objectType
@@ -11,7 +11,7 @@ type object interface {
 
 	// attrs: attribute type -> attribute value
 	// updates object attributes, construct and return appropriate changes
-	setAttrs(attrs map[int]int) []change
+	setAttrs(a *Agent, attrs map[int]int) []change
 
 	// check if given information matches this object
 	//  - newAttrs (attribute type -> attribute value): attributes to match, single mismatch would
@@ -53,6 +53,6 @@ func (o *commonObject) match(newAttrs map[int]int, consideredAttrTypes map[int]b
 func newCommonObject() *commonObject {
 	return &commonObject{
 		commonConcept: newCommonConcept(),
-		attrs: map[int]int{},
+		attrs:         map[int]int{},
 	}
 }

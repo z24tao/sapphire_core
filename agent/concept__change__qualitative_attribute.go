@@ -6,10 +6,12 @@ import (
 
 type qualitativeAttributeChange struct {
 	*commonChange
-	objectType objectType
-	attrType   int
-	oldVal     int
-	newVal     int
+	objectType      objectType
+	attrType        int
+	oldVal          int
+	newVal          int
+	beforeCondition *attributeCondition
+	afterCondition  *attributeCondition
 }
 
 func (c *qualitativeAttributeChange) toString(indent string, indentFirstLine bool) string {
@@ -23,21 +25,21 @@ func (c *qualitativeAttributeChange) toString(indent string, indentFirstLine boo
 	return result
 }
 
-func (c *qualitativeAttributeChange) match(other change) bool {
+func (c *qualitativeAttributeChange) match(other singletonConcept) bool {
 	o, ok := other.(*qualitativeAttributeChange)
 	if !ok {
 		return false
 	}
 
-	return c.objectType == o.objectType && c.attrType == o.attrType && c.oldVal == o.oldVal && c.newVal == o.newVal
+	return c.objectType.match(o.objectType) && c.attrType == o.attrType && c.oldVal == o.oldVal && c.newVal == o.newVal
 }
 
 func (c *qualitativeAttributeChange) before() condition {
-	return newAttributeCondition(c.objectType, c.attrType, c.oldVal)
+	return c.beforeCondition
 }
 
 func (c *qualitativeAttributeChange) after() condition {
-	return newAttributeCondition(c.objectType, c.attrType, c.newVal)
+	return c.afterCondition
 }
 
 func (c *qualitativeAttributeChange) precedes(other change) bool {
@@ -48,12 +50,17 @@ func (c *qualitativeAttributeChange) precedes(other change) bool {
 	return c.after().match(other.before())
 }
 
-func newQualitativeAttributeChange(objType objectType, attrType, oldVal, newVal int) *qualitativeAttributeChange {
-	return &qualitativeAttributeChange{
-		commonChange: newCommonChange(),
-		objectType:   objType,
-		attrType:     attrType,
-		oldVal:       oldVal,
-		newVal:       newVal,
+func (a *Agent) newQualitativeAttributeChange(t objectType, attrType, oldVal, newVal int) *qualitativeAttributeChange {
+	c := &qualitativeAttributeChange{
+		commonChange:    newCommonChange(),
+		objectType:      t,
+		attrType:        attrType,
+		oldVal:          oldVal,
+		newVal:          newVal,
+		beforeCondition: a.newAttributeCondition(t, attrType, oldVal),
+		afterCondition:  a.newAttributeCondition(t, attrType, newVal),
 	}
+
+	c = a.memory.add(c).(*qualitativeAttributeChange)
+	return c
 }

@@ -25,6 +25,7 @@ func newCausation(change change, actionType actionType) *causation {
 		occurrences:   1,
 	}
 
-	c.commonConcept.assocs[actionType] = 1.0
+	change.addAssoc(actionType, 0.5)
+	actionType.addAssoc(change, 0.5)
 	return c
 }
