@@ -27,9 +27,9 @@ func (t *conditionalActionType) toString(indent string, indentFirstLine bool) st
 	}
 	result += fmt.Sprintf("conditionalActionType")
 	result += fmt.Sprintf(" condition: %s\n", t.condition.toString(indent+"  ", false))
-	result += fmt.Sprintf(" passActionType: %s\n", t.passActionType.toString(indent+"  ", false))
-	result += fmt.Sprintf(" failActionType: %s\n", t.failActionType.toString(indent+"  ", false))
-	result += fmt.Sprintf(" value: %.2f", actionTypeValue(t))
+	result += fmt.Sprintf(indent + "  passActionType: %s\n", t.passActionType.toString(indent+"  ", false))
+	result += fmt.Sprintf(indent + "  failActionType: %s\n", t.failActionType.toString(indent+"  ", false))
+	result += fmt.Sprintf(indent + "  value: %.2f", actionTypeValue(t))
 	result += t.commonActionType.toString(indent, indentFirstLine)
 	return result
 }
@@ -51,6 +51,8 @@ func (a *Agent) newConditionalActionType(c condition, p, f actionType) *conditio
 		passActionType:   p,
 		failActionType:   f,
 	}
+
+	t.commonActionType.conditions[actionConditionTypeStart][c] = true
 
 	t = a.memory.add(t).(*conditionalActionType)
 	return t

@@ -5,7 +5,7 @@ package agent
 	across information category, i.e. seeing <an object> reminds me of <an action>.
 */
 type concept interface {
-	addAssoc(other concept, strength float64)
+	addAssoc(other singletonConcept, strength float64)
 	getAssocs() map[concept]float64 // associated concept -> association strength
 	//deprecate()                                          // delete all assocs from self, and delete self from all assocs
 	toString(indent string, indentFirstLine bool) string // used for debug
@@ -26,17 +26,30 @@ type conceptType interface {
 
 // the purpose of this struct is to remove duplicated code from implementations
 type commonConcept struct {
-	assocs map[concept]float64
+	assocs map[singletonConcept]float64
 }
 
-func (c *commonConcept) addAssoc(other concept, strength float64) {
-	if c.assocs[other] < strength {
-		c.assocs[other] = strength
+func (c *commonConcept) addAssoc(other singletonConcept, strength float64) {
+	for existingAssoc := range c.assocs {
+		if existingAssoc.match(other) {
+			if c.assocs[existingAssoc] < strength {
+				c.assocs[existingAssoc] = strength
+			}
+			return
+		}
 	}
+
+	c.assocs[other] = strength
 }
 
 func (c *commonConcept) getAssocs() map[concept]float64 {
-	return c.assocs
+	result := map[concept]float64{}
+
+	for assoc, strength := range c.assocs {
+		result[assoc] = strength
+	}
+
+	return result
 }
 
 func (c *commonConcept) deprecate() {
@@ -54,6 +67,6 @@ func (c *commonConcept) toString(indent string, indentFirstLine bool) string {
 
 func newCommonConcept() *commonConcept {
 	return &commonConcept{
-		assocs: map[concept]float64{}, // associated concept -> association strength
+		assocs: map[singletonConcept]float64{}, // associated concept -> association strength
 	}
 }

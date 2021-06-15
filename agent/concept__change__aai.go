@@ -36,7 +36,7 @@ func (c *aaiChange) precedes(change) bool {
 
 func (c *aaiChange) match(other singletonConcept) bool {
 	otherChange, ok := other.(*aaiChange)
-	return ok && c.actionType == otherChange.actionType && c.enabling == otherChange.enabling
+	return ok && c.actionType.match(otherChange.actionType) && c.enabling == otherChange.enabling
 }
 
 func (a *Agent) newAAIChange(t *atomicActionType, enabling bool) *aaiChange {

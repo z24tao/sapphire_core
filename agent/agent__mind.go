@@ -5,7 +5,7 @@ import (
 	"sort"
 )
 
-const mindCapacity = 30
+const mindCapacity = 100
 
 type mind struct {
 	thoughts    map[concept]float64

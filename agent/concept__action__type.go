@@ -3,6 +3,7 @@ package agent
 import (
 	"fmt"
 	"math"
+	"math/rand"
 )
 
 const (
@@ -39,7 +40,8 @@ type commonActionType struct {
 }
 
 func (t *commonActionType) toString(indent string, _ bool) string {
-	result := fmt.Sprintf(" causations (%d)", len(t.causations))
+	result := fmt.Sprintf(" attempts %d,", t.attempts)
+	result += fmt.Sprintf(" causations (%d)", len(t.causations))
 
 	if len(t.causations) == 0 {
 		return result
@@ -90,7 +92,11 @@ func newCommonActionType() *commonActionType {
 
 // the expected value of taking this action once
 func actionTypeValue(t actionType) float64 {
-	v := math.Max(curiosityValue*math.Pow(0.8, float64(t.getAttempts())), 10.0)
+	curiosityBase := rand.Float64() * 30
+	//if learned == 0 {
+	//	curiosityBase = rand.Float64() * 1
+	//}
+	v := math.Max(curiosityValue*math.Pow(0.8, float64(t.getAttempts())), curiosityBase)
 
 	for c := range t.getCausations() {
 		v += c.change.getValue() * float64(c.occurrences) / float64(t.getAttempts())

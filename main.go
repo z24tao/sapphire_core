@@ -8,9 +8,21 @@ import (
 )
 
 func main() {
-	a := agent.NewAgent()
+	go addAgent(1)
 	for {
-		a.TimeStep()
-		time.Sleep(time.Second / 200)
+		time.Sleep(time.Second)
+	}
+}
+
+func addAgent(num int) {
+	var agents []*agent.Agent
+	for i := 0; i < num; i ++ {
+		agents = append(agents, agent.NewAgent())
+	}
+	for {
+		for _, a := range agents {
+			a.TimeStep()
+			time.Sleep(time.Second / 20)
+		}
 	}
 }

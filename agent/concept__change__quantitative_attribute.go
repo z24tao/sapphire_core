@@ -1,6 +1,8 @@
 package agent
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type quantitativeAttributeChange struct {
 	*commonChange
@@ -53,6 +55,11 @@ func (a *Agent) newQuantitativeAttributeChange(t objectType, attrType int, incre
 		objectType:   t,
 		attrType:     attrType,
 		increase:     increase,
+	}
+
+	c.value = 20 // TODO DELETE HARDCODED VALUE
+	if c.increase {
+		c.value = 0
 	}
 
 	c = a.memory.add(c).(*quantitativeAttributeChange)

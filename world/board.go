@@ -48,7 +48,7 @@ func (b *board) moveUnit(u unit, dx, dz int) bool {
 	}
 
 	dest := [2]int{src[0] + dx, src[1] + dz}
-	fmt.Println("unit moving from ", src, " to ", dest, " type ", u._name())
+	//fmt.Println("unit moving from ", src, " to ", dest, " type ", u._name())
 	if dest[0] < 0 || dest[0] >= len(b.tiles) ||
 		dest[1] < 0 || dest[1] >= len(b.tiles[0]) {
 		//fmt.Println("failed to move, destination out of bounds")
@@ -87,10 +87,33 @@ func (b *board) unitEat(u unit) []interface{} {
 	var response []interface{}
 	eatenItem := t.occupants[unitTypeItem]
 	if eatenItem != nil {
-		fmt.Println("ate apple at", b.units[u][0], b.units[u][1])
+		fmt.Println("ate", eatenItem._name() , "at", b.units[u][0], b.units[u][1])
 		response = eatenItem._eatenResponse()
 		b.removeUnit(eatenItem)
-		scheduleEvent(currTime+2, addRandomApple)
+
+		if eatenItem._color() == red {
+			scheduleEvent(currTime+2, addRandomItem, newApple())
+		} else if eatenItem._color() == orange {
+			scheduleEvent(currTime+2, addRandomItem, newOrange())
+		} else if eatenItem._color() == yellow {
+			scheduleEvent(currTime+2, addRandomItem, newLemon())
+		} else if eatenItem._color() == green {
+			scheduleEvent(currTime+2, addRandomItem, newLime())
+		} else if eatenItem._color() == blue {
+			scheduleEvent(currTime+2, addRandomItem, newBlueberry())
+		}
+
+		//if eatenItem._color() == red {
+		//	scheduleEvent(currTime+2, addRandomItem, newOrange())
+		//} else if eatenItem._color() == orange {
+		//	scheduleEvent(currTime+2, addRandomItem, newLemon())
+		//} else if eatenItem._color() == yellow {
+		//	scheduleEvent(currTime+2, addRandomItem, newLime())
+		//} else if eatenItem._color() == green {
+		//	scheduleEvent(currTime+2, addRandomItem, newBlueberry())
+		//} else if eatenItem._color() == blue {
+		//	scheduleEvent(currTime+2, addRandomItem, newApple())
+		//}
 	}
 	return response
 }

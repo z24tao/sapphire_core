@@ -19,12 +19,18 @@ type Agent struct {
 	unitId   int
 }
 
+//var learned = 3000
+
 func (a *Agent) TimeStep() {
+	//if learned > 0 {
+	//	learned--
+	//}
 	a.updateState()
 	a.observe() // observe and learn
 	a.act()     // think and act
 	fmt.Println(a.mind.toString())
 	//fmt.Println(hypothesisCount, "hypotheses")
+	//fmt.Println("learned", learned)
 }
 
 func (a *Agent) updateState() {
@@ -253,9 +259,7 @@ func (a *Agent) updateActionCausations() {
 
 			matched := false
 			actionCausations := ac.getType().getCausations()
-			//fmt.Println("actionCausations", actionCausations)
 			for currCausation := range actionCausations {
-				//fmt.Println("match", currCausation.change.match(c))
 				if currCausation.change.match(c) {
 					matched = true
 					currCausation.occurrences++
@@ -276,13 +280,19 @@ func (a *Agent) updateActionCausations() {
 		}
 
 		a.buildActionHypotheses(ac)
-		a.evaluateActionHypotheses(ac)
+		//a.evaluateActionHypotheses(ac)
+		a.buildConditionalActions(ac)
 	}
 
 	a.mind.changes = make([]change, 0)
 }
 
 func (a *Agent) buildActionHypotheses(ac action) {
+	// for now, only allow hypotheses on atomic actions
+	if _, ok := ac.(*atomicAction); !ok {
+		return
+	}
+
 	forwardHypotheses, backwardHypotheses := ac.getType().getHypotheses()
 	preconditions := ac.getPreconditions()
 	for cond := range preconditions {
@@ -332,7 +342,13 @@ func (a *Agent) buildActionHypotheses(ac action) {
 	}
 }
 
+// only for printing for now
 func (a *Agent) evaluateActionHypotheses(ac action) {
+	// for now, only allow hypotheses on atomic actions
+	if _, ok := ac.(*atomicAction); !ok {
+		return
+	}
+
 	if rand.Intn(10) == 0 {
 		fmt.Println("===== evaluate action hypotheses =====")
 		fmt.Println(ac.toString("", true))
@@ -346,6 +362,24 @@ func (a *Agent) evaluateActionHypotheses(ac action) {
 		for _, row := range backwardHypotheses {
 			for _, h := range row {
 				fmt.Println(h.toString("  ", true))
+			}
+		}
+	}
+}
+
+func (a *Agent) buildConditionalActions(ac action) {
+	// for now, only allow hypotheses on atomic actions
+	if _, ok := ac.(*atomicAction); !ok {
+		return
+	}
+
+	// only use forward hypotheses for now
+	forwardHypotheses, _ := ac.getType().getHypotheses()
+	for _, row := range forwardHypotheses {
+		for _, h := range row {
+			if h.evaluate() > 0.9 {
+				ca := a.newConditionalActionType(h.condition, ac.getType(), emptyActionTypeSingleton)
+				a.mind.addItem(ca, 1.0)
 			}
 		}
 	}
