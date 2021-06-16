@@ -19,7 +19,7 @@ func (t *commonObjectType) getAttrs() map[int]int {
 	return t.attrs
 }
 
-func (t *commonObjectType) match(other singletonConcept) bool {
+func (t *commonObjectType) match(other concept) bool {
 	otherObjectType, ok := other.(objectType)
 	if !ok {
 		return false

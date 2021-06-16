@@ -10,7 +10,11 @@ type sequentialAction struct {
 	doneFirst  bool
 }
 
-func (a *sequentialAction) toString(indent string, indentFirstLine bool) string {
+func (a *sequentialAction) match(_ concept) bool {
+	return false
+}
+
+func (a *sequentialAction) toString(indent string, recursive, indentFirstLine bool) string {
 	result := ""
 	if indentFirstLine {
 		result += indent
@@ -18,7 +22,7 @@ func (a *sequentialAction) toString(indent string, indentFirstLine bool) string 
 	result += fmt.Sprintf("sequentialAction")
 	result += fmt.Sprintf(" done first: %t", a.doneFirst)
 	result += fmt.Sprintf(" state: %s", actionStates[a.state])
-	result += fmt.Sprintf(" type: %s", a.actionType.toString(indent, indentFirstLine))
+	result += fmt.Sprintf(" type: %s", a.actionType.toString(indent, recursive, indentFirstLine))
 	return result
 }
 
@@ -39,7 +43,6 @@ func (a *sequentialAction) start(agent *Agent) bool {
 
 	a.doneFirst = false
 	a.state = actionStateActive
-	a.actionType.attempts++
 	return true
 }
 

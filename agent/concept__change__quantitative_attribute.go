@@ -1,6 +1,8 @@
 package agent
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type quantitativeAttributeChange struct {
 	*commonChange
@@ -10,7 +12,7 @@ type quantitativeAttributeChange struct {
 	// TODO add scale e.g. 10^0, 10^1, etc.
 }
 
-func (c *quantitativeAttributeChange) toString(indent string, indentFirstLine bool) string {
+func (c *quantitativeAttributeChange) toString(indent string, _, indentFirstLine bool) string {
 	result := ""
 	if indentFirstLine {
 		result += indent
@@ -26,7 +28,7 @@ func (c *quantitativeAttributeChange) toString(indent string, indentFirstLine bo
 	return result
 }
 
-func (c *quantitativeAttributeChange) match(other singletonConcept) bool {
+func (c *quantitativeAttributeChange) match(other concept) bool {
 	o, ok := other.(*quantitativeAttributeChange)
 	if !ok {
 		return false
@@ -53,6 +55,11 @@ func (a *Agent) newQuantitativeAttributeChange(t objectType, attrType int, incre
 		objectType:   t,
 		attrType:     attrType,
 		increase:     increase,
+	}
+
+	c.value = 20 // TODO DELETE HARDCODED VALUE
+	if c.increase {
+		c.value = 0
 	}
 
 	c = a.memory.add(c).(*quantitativeAttributeChange)

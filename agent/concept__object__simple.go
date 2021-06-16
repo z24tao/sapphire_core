@@ -7,12 +7,23 @@ type simpleObject struct {
 	objectType *simpleObjectType
 }
 
-func (o *simpleObject) toString(indent string, indentFirstLine bool) string {
+func (o *simpleObject) toString(indent string, _, indentFirstLine bool) string {
 	result := ""
 	if indentFirstLine {
 		result += indent
 	}
-	result += fmt.Sprintf("simpleObject: %s", o.objectType.debugName)
+	result += fmt.Sprintf("simpleObject: %s,", o.objectType.debugName)
+	result += fmt.Sprintf(" attributes: (%d) [\n", len(o.attrs))
+
+	for attrType, attrVal := range o.attrs {
+		if qualitativeAttrTypes[attrType] {
+			result += fmt.Sprintf(indent+"  %s: %s\n", attrTypes[attrType], attrVals[attrType][attrVal])
+		} else {
+			result += fmt.Sprintf(indent+"  %s: %d\n", attrTypes[attrType], attrVal)
+		}
+	}
+	result += indent + "]"
+
 	return result
 }
 

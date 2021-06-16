@@ -5,10 +5,16 @@ package agent
 	across information category, i.e. seeing <an object> reminds me of <an action>.
 */
 type concept interface {
+	// associated concept -> association strength
+	getAssocs() map[concept]float64
 	addAssoc(other concept, strength float64)
-	getAssocs() map[concept]float64 // associated concept -> association strength
-	//deprecate()                                          // delete all assocs from self, and delete self from all assocs
-	toString(indent string, indentFirstLine bool) string // used for debug
+	match(other concept) bool
+
+	// delete all assocs from self, and delete self from all assocs
+	deprecate()
+
+	// used for debug
+	toString(indent string, recursive, indentFirstLine bool) string
 }
 
 /*
@@ -20,7 +26,7 @@ type concept interface {
 	Person B: "I would assume it is sweet."
 */
 type conceptType interface {
-	singletonConcept
+	concept
 	instantiate() concept // create instance from type
 }
 
@@ -30,13 +36,26 @@ type commonConcept struct {
 }
 
 func (c *commonConcept) addAssoc(other concept, strength float64) {
-	if c.assocs[other] < strength {
-		c.assocs[other] = strength
+	for existingAssoc := range c.assocs {
+		if existingAssoc.match(other) {
+			if c.assocs[existingAssoc] < strength {
+				c.assocs[existingAssoc] = strength
+			}
+			return
+		}
 	}
+
+	c.assocs[other] = strength
 }
 
 func (c *commonConcept) getAssocs() map[concept]float64 {
-	return c.assocs
+	result := map[concept]float64{}
+
+	for assoc, strength := range c.assocs {
+		result[assoc] = strength
+	}
+
+	return result
 }
 
 func (c *commonConcept) deprecate() {
@@ -45,11 +64,14 @@ func (c *commonConcept) deprecate() {
 	}
 }
 
-//
-// this function exists for commonConcept to implement concept, in order to allow deprecate to access concept assocs,
+// these functions exists for commonConcept to implement concept, in order to allow deprecate to access concept assocs,
 //   should not be called directly
-func (c *commonConcept) toString(indent string, indentFirstLine bool) string {
-	return ""
+func (c *commonConcept) match(_ concept) bool {
+	panic("implement me")
+}
+
+func (c *commonConcept) toString(_ string, _, _ bool) string {
+	panic("implement me")
 }
 
 func newCommonConcept() *commonConcept {

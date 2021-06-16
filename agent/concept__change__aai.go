@@ -10,7 +10,7 @@ type aaiChange struct {
 	enabling   bool // true: disabled -> enabled, false: enabled -> disabled
 }
 
-func (c *aaiChange) toString(indent string, indentFirstLine bool) string {
+func (c *aaiChange) toString(indent string, _, indentFirstLine bool) string {
 	result := ""
 	if indentFirstLine {
 		result += indent
@@ -34,9 +34,9 @@ func (c *aaiChange) precedes(change) bool {
 	return false
 }
 
-func (c *aaiChange) match(other singletonConcept) bool {
+func (c *aaiChange) match(other concept) bool {
 	otherChange, ok := other.(*aaiChange)
-	return ok && c.actionType == otherChange.actionType && c.enabling == otherChange.enabling
+	return ok && c.actionType.match(otherChange.actionType) && c.enabling == otherChange.enabling
 }
 
 func (a *Agent) newAAIChange(t *atomicActionType, enabling bool) *aaiChange {

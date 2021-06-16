@@ -3,6 +3,7 @@ package agent
 import (
 	"fmt"
 	"math"
+	"math/rand"
 )
 
 const (
@@ -25,6 +26,7 @@ type actionType interface {
 	getConditions() map[int]map[condition]bool // condition type enum -> set of conditions
 	getCausations() map[*causation]bool        // set of causations
 	getAttempts() int
+	attempt()
 	getHypotheses() (map[condition]map[change]*hypothesis, map[change]map[condition]*hypothesis)
 }
 
@@ -38,8 +40,13 @@ type commonActionType struct {
 	backwardHypotheses map[change]map[condition]*hypothesis // hypotheses of "this change is caused by this condition"
 }
 
-func (t *commonActionType) toString(indent string, _ bool) string {
-	result := fmt.Sprintf(" causations (%d)", len(t.causations))
+func (t *commonActionType) match(_ concept) bool {
+	return false
+}
+
+func (t *commonActionType) toString(indent string, recursive, _ bool) string {
+	result := fmt.Sprintf(" attempts %d,", t.attempts)
+	result += fmt.Sprintf(" causations (%d)", len(t.causations))
 
 	if len(t.causations) == 0 {
 		return result
@@ -47,7 +54,7 @@ func (t *commonActionType) toString(indent string, _ bool) string {
 
 	result += ": [\n"
 	for c := range t.causations {
-		result += c.toString(indent+"  ", true) + "\n"
+		result += c.toString(indent+"  ", recursive, true) + "\n"
 	}
 	result += indent + "]"
 	return result
@@ -65,6 +72,10 @@ func (t *commonActionType) getCausations() map[*causation]bool {
 
 func (t *commonActionType) getAttempts() int {
 	return t.attempts
+}
+
+func (t *commonActionType) attempt() {
+	t.attempts++
 }
 
 func (t *commonActionType) getHypotheses() (map[condition]map[change]*hypothesis, map[change]map[condition]*hypothesis) {
@@ -90,7 +101,11 @@ func newCommonActionType() *commonActionType {
 
 // the expected value of taking this action once
 func actionTypeValue(t actionType) float64 {
-	v := math.Max(curiosityValue*math.Pow(0.8, float64(t.getAttempts())), 10.0)
+	curiosityBase := rand.Float64() * 30
+	//if learned == 0 {
+	//	curiosityBase = rand.Float64() * 1
+	//}
+	v := math.Max(curiosityValue*math.Pow(0.8, float64(t.getAttempts())), curiosityBase)
 
 	for c := range t.getCausations() {
 		v += c.change.getValue() * float64(c.occurrences) / float64(t.getAttempts())

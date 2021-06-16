@@ -9,7 +9,7 @@ type conditionalActionType struct {
 	failActionType actionType
 }
 
-func (t *conditionalActionType) match(other singletonConcept) bool {
+func (t *conditionalActionType) match(other concept) bool {
 	o, ok := other.(*conditionalActionType)
 	if !ok {
 		return false
@@ -20,17 +20,22 @@ func (t *conditionalActionType) match(other singletonConcept) bool {
 		t.failActionType.match(o.failActionType)
 }
 
-func (t *conditionalActionType) toString(indent string, indentFirstLine bool) string {
+func (t *conditionalActionType) toString(indent string, recursive, indentFirstLine bool) string {
 	result := ""
 	if indentFirstLine {
 		result += indent
 	}
 	result += fmt.Sprintf("conditionalActionType")
-	result += fmt.Sprintf(" condition: %s\n", t.condition.toString(indent+"  ", false))
-	result += fmt.Sprintf(" passActionType: %s\n", t.passActionType.toString(indent+"  ", false))
-	result += fmt.Sprintf(" failActionType: %s\n", t.failActionType.toString(indent+"  ", false))
-	result += fmt.Sprintf(" value: %.2f", actionTypeValue(t))
-	result += t.commonActionType.toString(indent, indentFirstLine)
+	result += fmt.Sprintf(" condition: %s\n", t.condition.toString(indent+"  ", recursive, false))
+	result += fmt.Sprintf(indent+"  passActionType: %s\n", t.passActionType.toString(indent+"  ", recursive, false))
+	result += fmt.Sprintf(indent+"  failActionType: %s\n", t.failActionType.toString(indent+"  ", recursive, false))
+	result += fmt.Sprintf(indent+"  value: %.2f", actionTypeValue(t))
+
+	if !recursive {
+		return result
+	}
+
+	result += t.commonActionType.toString(indent, false, indentFirstLine)
 	return result
 }
 
@@ -51,6 +56,8 @@ func (a *Agent) newConditionalActionType(c condition, p, f actionType) *conditio
 		passActionType:   p,
 		failActionType:   f,
 	}
+
+	t.commonActionType.conditions[actionConditionTypeStart][c] = true
 
 	t = a.memory.add(t).(*conditionalActionType)
 	return t

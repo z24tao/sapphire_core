@@ -5,6 +5,6 @@ import (
 	"net/http"
 )
 
-func boardHandler(w http.ResponseWriter, r *http.Request) {
+func boardHandler(w http.ResponseWriter, _ *http.Request) {
 	serveData(w, world.GetDefaultBoardState())
 }

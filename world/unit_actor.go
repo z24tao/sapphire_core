@@ -1,5 +1,7 @@
 package world
 
+import "math/rand"
+
 type actorUnit struct {
 	__id    int
 	__board *board
@@ -43,7 +45,7 @@ func NewActor() int {
 	}
 
 	units[id] = a
-	if !defaultBoard.addUnitAt(a, [2]int{2, 2}) {
+	if !defaultBoard.addUnitAt(a, [2]int{rand.Intn(10), rand.Intn(10)}) {
 		panic("board out of space")
 	}
 

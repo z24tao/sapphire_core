@@ -4,7 +4,7 @@ type emptyActionType struct {
 	*commonActionType
 }
 
-func (t *emptyActionType) toString(indent string, indentFirstLine bool) string {
+func (t *emptyActionType) toString(indent string, recursive, indentFirstLine bool) string {
 	result := ""
 	if indentFirstLine {
 		result += indent
@@ -13,7 +13,7 @@ func (t *emptyActionType) toString(indent string, indentFirstLine bool) string {
 	return result
 }
 
-func (t *emptyActionType) match(other singletonConcept) bool {
+func (t *emptyActionType) match(other concept) bool {
 	_, ok := other.(*emptyActionType)
 	return ok
 }

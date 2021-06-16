@@ -14,7 +14,7 @@ type qualitativeAttributeChange struct {
 	afterCondition  *attributeCondition
 }
 
-func (c *qualitativeAttributeChange) toString(indent string, indentFirstLine bool) string {
+func (c *qualitativeAttributeChange) toString(indent string, _, indentFirstLine bool) string {
 	result := ""
 	if indentFirstLine {
 		result += indent
@@ -25,7 +25,7 @@ func (c *qualitativeAttributeChange) toString(indent string, indentFirstLine boo
 	return result
 }
 
-func (c *qualitativeAttributeChange) match(other singletonConcept) bool {
+func (c *qualitativeAttributeChange) match(other concept) bool {
 	o, ok := other.(*qualitativeAttributeChange)
 	if !ok {
 		return false

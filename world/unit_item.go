@@ -61,7 +61,72 @@ func newApple() int {
 	return id
 }
 
-func addRandomApple() {
+func newOrange() int {
+	id := newUnitId()
+	a := &itemUnit{
+		__id:        id,
+		__board:     defaultBoard,
+		__color:     orange,
+		__shape:     circle,
+		__isSweet:   true,
+		__nutrition: 15,
+		__name:      "orange",
+	}
+
+	units[id] = a
+	return id
+}
+
+func newLemon() int {
+	id := newUnitId()
+	a := &itemUnit{
+		__id:        id,
+		__board:     defaultBoard,
+		__color:     yellow,
+		__shape:     circle,
+		__isSweet:   true,
+		__nutrition: 15,
+		__name:      "lemon",
+	}
+
+	units[id] = a
+	return id
+}
+
+func newLime() int {
+	id := newUnitId()
+	a := &itemUnit{
+		__id:        id,
+		__board:     defaultBoard,
+		__color:     green,
+		__shape:     circle,
+		__isSweet:   true,
+		__nutrition: 15,
+		__name:      "lime",
+	}
+
+	units[id] = a
+	return id
+}
+
+func newBlueberry() int {
+	id := newUnitId()
+	a := &itemUnit{
+		__id:        id,
+		__board:     defaultBoard,
+		__color:     blue,
+		__shape:     circle,
+		__isSweet:   true,
+		__nutrition: 15,
+		__name:      "blueberry",
+	}
+
+	units[id] = a
+	return id
+}
+
+func addRandomItem(itemId int) {
 	xLen, zLen := len(defaultBoard.tiles), len(defaultBoard.tiles[0])
-	defaultBoard.addUnitAt(units[newApple()], [2]int{rand.Intn(xLen-4) + 2, rand.Intn(zLen-4) + 2})
+	for defaultBoard.addUnitAt(units[itemId], [2]int{rand.Intn(xLen-2) + 1, rand.Intn(zLen-2) + 1}) == false {
+	}
 }
