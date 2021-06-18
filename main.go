@@ -17,12 +17,13 @@ func main() {
 func addAgent(num int) {
 	var agents []*agent.Agent
 	for i := 0; i < num; i++ {
+
 		agents = append(agents, agent.NewAgent())
 	}
 	for {
 		for _, a := range agents {
 			a.TimeStep()
-			time.Sleep(time.Second / 100)
+			time.Sleep(time.Second / 20)
 		}
 	}
 }
