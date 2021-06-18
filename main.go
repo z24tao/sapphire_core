@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// test commit 1
+// test commit 2
 func main() {
 	go addAgent(1)
 	for {
