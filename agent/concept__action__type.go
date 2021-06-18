@@ -26,6 +26,7 @@ type actionType interface {
 	getConditions() map[int]map[condition]bool // condition type enum -> set of conditions
 	getCausations() map[*causation]bool        // set of causations
 	getAttempts() int
+	attempt()
 	getHypotheses() (map[condition]map[change]*hypothesis, map[change]map[condition]*hypothesis)
 }
 
@@ -39,7 +40,11 @@ type commonActionType struct {
 	backwardHypotheses map[change]map[condition]*hypothesis // hypotheses of "this change is caused by this condition"
 }
 
-func (t *commonActionType) toString(indent string, _ bool) string {
+func (t *commonActionType) match(_ concept) bool {
+	return false
+}
+
+func (t *commonActionType) toString(indent string, recursive, _ bool) string {
 	result := fmt.Sprintf(" attempts %d,", t.attempts)
 	result += fmt.Sprintf(" causations (%d)", len(t.causations))
 
@@ -49,7 +54,7 @@ func (t *commonActionType) toString(indent string, _ bool) string {
 
 	result += ": [\n"
 	for c := range t.causations {
-		result += c.toString(indent+"  ", true) + "\n"
+		result += c.toString(indent+"  ", recursive, true) + "\n"
 	}
 	result += indent + "]"
 	return result
@@ -67,6 +72,10 @@ func (t *commonActionType) getCausations() map[*causation]bool {
 
 func (t *commonActionType) getAttempts() int {
 	return t.attempts
+}
+
+func (t *commonActionType) attempt() {
+	t.attempts++
 }
 
 func (t *commonActionType) getHypotheses() (map[condition]map[change]*hypothesis, map[change]map[condition]*hypothesis) {

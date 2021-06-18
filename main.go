@@ -17,6 +17,7 @@ func main() {
 func addAgent(num int) {
 	var agents []*agent.Agent
 	for i := 0; i < num; i ++ {
+
 		agents = append(agents, agent.NewAgent())
 	}
 	for {

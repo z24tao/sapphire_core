@@ -16,7 +16,7 @@ func (c *aaiCondition) isSatisfied(*Agent) bool {
 	return c.aai.Enabled == c.enabled
 }
 
-func (c *aaiCondition) match(other singletonConcept) bool {
+func (c *aaiCondition) match(other concept) bool {
 	if o, ok := other.(*aaiCondition); ok {
 		return c.aai == o.aai && c.enabled == o.enabled
 	}
@@ -24,7 +24,7 @@ func (c *aaiCondition) match(other singletonConcept) bool {
 	return false
 }
 
-func (c *aaiCondition) toString(indent string, indentFirstLine bool) string {
+func (c *aaiCondition) toString(indent string, _, indentFirstLine bool) string {
 	result := ""
 	if indentFirstLine {
 		result += indent

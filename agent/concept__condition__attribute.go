@@ -21,13 +21,13 @@ type attributeCondition struct {
 	attrVal  int
 }
 
-func (c *attributeCondition) toString(indent string, indentFirstLine bool) string {
+func (c *attributeCondition) toString(indent string, recursive, indentFirstLine bool) string {
 	result := ""
 	if indentFirstLine {
 		result += indent
 	}
 	result += "attributeCondition"
-	result += fmt.Sprintf(" objectType: %s", c.objType.toString(indent+"  ", false))
+	result += fmt.Sprintf(" objectType: %s", c.objType.toString(indent+"  ", recursive, false))
 	result += fmt.Sprintf(" attrType: %s", attrTypes[c.attrType])
 	result += fmt.Sprintf(" attrVal: %s", attrVals[c.attrType][c.attrVal])
 	return result
@@ -42,7 +42,7 @@ func (c *attributeCondition) isSatisfied(a *Agent) bool {
 		c.attrType: true,
 	}
 	for _, mindObj := range mindObjs {
-		if mindObj.match(matchAttrs, consideredAttrTypes) {
+		if mindObj.matchAttrs(matchAttrs, consideredAttrTypes) {
 			return true
 		}
 	}
@@ -50,7 +50,7 @@ func (c *attributeCondition) isSatisfied(a *Agent) bool {
 	return false
 }
 
-func (c *attributeCondition) match(other singletonConcept) bool {
+func (c *attributeCondition) match(other concept) bool {
 	otherAttributeCondition, ok := other.(*attributeCondition)
 	if !ok {
 		return false

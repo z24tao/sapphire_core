@@ -17,7 +17,7 @@ func (t *atomicActionType) instantiate() concept {
 	}
 }
 
-func (t *atomicActionType) match(other singletonConcept) bool {
+func (t *atomicActionType) match(other concept) bool {
 	o, ok := other.(*atomicActionType)
 	if !ok {
 		return false
@@ -26,16 +26,20 @@ func (t *atomicActionType) match(other singletonConcept) bool {
 	return t.aai == o.aai
 }
 
-func (t *atomicActionType) toString(indent string, indentFirstLine bool) string {
+func (t *atomicActionType) toString(indent string, recursive, indentFirstLine bool) string {
 	result := ""
 	if indentFirstLine {
 		result += indent
 	}
 	result += fmt.Sprintf("atomicActionType: %s,", t.aai.Name)
+
+	if !recursive {
+		return result
+	}
+
 	result += fmt.Sprintf(" enabled: %t,", t.aai.Enabled)
 	result += fmt.Sprintf(" value: %.2f,", actionTypeValue(t))
-	result += fmt.Sprintf(" attempted: %d,", t.attempts)
-	result += t.commonActionType.toString(indent, indentFirstLine)
+	result += t.commonActionType.toString(indent, false, indentFirstLine)
 	return result
 }
 

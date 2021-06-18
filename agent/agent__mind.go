@@ -61,7 +61,14 @@ func (m *mind) actionTypes() []actionType {
 }
 
 func (m *mind) addItem(c concept, importance float64) {
-	m.newThoughts[c] = append(m.newThoughts[c], importance)
+	for existingThought := range m.newThoughts {
+		if existingThought.match(c) {
+			m.newThoughts[existingThought] = append(m.newThoughts[existingThought], importance)
+			return
+		}
+	}
+
+	m.newThoughts[c] = []float64{importance}
 }
 
 func (m *mind) spawnThoughts() {
@@ -127,7 +134,7 @@ func (m *mind) filterThoughts() {
 func (m *mind) toString() string {
 	result := "thoughts: [\n"
 	for c, i := range m.thoughts {
-		result += c.toString("  ", true) + ", importance: " + fmt.Sprintf("%.2f", i) + "\n"
+		result += c.toString("  ", true, true) + ", importance: " + fmt.Sprintf("%.2f", i) + "\n"
 	}
 	result += "]"
 	return result

@@ -12,7 +12,7 @@ type agentChange struct {
 	afterCondition  *agentCondition
 }
 
-func (c *agentChange) toString(indent string, indentFirstLine bool) string {
+func (c *agentChange) toString(indent string, _, indentFirstLine bool) string {
 	result := ""
 	if indentFirstLine {
 		result += indent
@@ -23,7 +23,7 @@ func (c *agentChange) toString(indent string, indentFirstLine bool) string {
 	return result
 }
 
-func (c *agentChange) match(other singletonConcept) bool {
+func (c *agentChange) match(other concept) bool {
 	o, ok := other.(*agentChange)
 
 	return ok && c.stateType == o.stateType && c.deltaVal == o.deltaVal

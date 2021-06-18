@@ -28,9 +28,6 @@ func (a *Agent) TimeStep() {
 	a.updateState()
 	a.observe() // observe and learn
 	a.act()     // think and act
-	fmt.Println(a.mind.toString())
-	//fmt.Println(hypothesisCount, "hypotheses")
-	//fmt.Println("learned", learned)
 }
 
 func (a *Agent) updateState() {
@@ -93,11 +90,18 @@ func (a *Agent) identifyAttributes(img *world.Image) map[int]int {
 
 func (a *Agent) identifyObjectInst(attrs map[int]int) object {
 	mindObjs := a.mind.objects()
-	for _, obj := range mindObjs {
-		if obj.match(attrs, visualAttrTypes) {
-			changes := obj.setAttrs(a, attrs)
+	challengeObj := &simpleObject{
+		commonObject: newCommonObject(),
+		objectType:   nil,
+	}
+	challengeObj.attrs = attrs
+
+	for _, mindObj := range mindObjs {
+		if challengeObj.match(mindObj) {
+			changes := mindObj.setAttrs(a, attrs)
+			a.mind.addItem(mindObj, imageDefaultImportance)
 			a.recordActionChanges(changes)
-			return obj
+			return mindObj
 		}
 	}
 
@@ -233,6 +237,8 @@ func (a *Agent) stepActions() {
 		if ac.getState() == actionStateIdle {
 			if !ac.start(a) {
 				continue
+			} else {
+				ac.getType().attempt()
 			}
 		}
 
@@ -284,6 +290,10 @@ func (a *Agent) updateActionCausations() {
 		a.buildConditionalActions(ac)
 	}
 
+	//fmt.Println(len(a.mind.changes), "changes")
+	//for _, ch := range a.mind.changes {
+	//	fmt.Println(ch.toString("", true, true))
+	//}
 	a.mind.changes = make([]change, 0)
 }
 
@@ -351,17 +361,17 @@ func (a *Agent) evaluateActionHypotheses(ac action) {
 
 	if rand.Intn(10) == 0 {
 		fmt.Println("===== evaluate action hypotheses =====")
-		fmt.Println(ac.toString("", true))
+		fmt.Println(ac.getType().toString("", true, true))
 		fmt.Println()
 		forwardHypotheses, backwardHypotheses := ac.getType().getHypotheses()
 		for _, row := range forwardHypotheses {
 			for _, h := range row {
-				fmt.Println(h.toString("  ", true))
+				fmt.Println(h.toString("  ", true, true))
 			}
 		}
 		for _, row := range backwardHypotheses {
 			for _, h := range row {
-				fmt.Println(h.toString("  ", true))
+				fmt.Println(h.toString("  ", true, true))
 			}
 		}
 	}
@@ -377,6 +387,12 @@ func (a *Agent) buildConditionalActions(ac action) {
 	forwardHypotheses, _ := ac.getType().getHypotheses()
 	for _, row := range forwardHypotheses {
 		for _, h := range row {
+			// if a condition is always satisfied, ignore it
+			//   this is to dodge "if apple is red walk towards it"
+			if h.conditionMatch > ac.getType().getAttempts()*9/10 {
+				continue
+			}
+
 			if h.evaluate() > 0.9 {
 				ca := a.newConditionalActionType(h.condition, ac.getType(), emptyActionTypeSingleton)
 				a.mind.addItem(ca, 1.0)

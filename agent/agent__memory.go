@@ -8,24 +8,24 @@ import (
 // singleton concepts: every concept that cannot be constructed via some conceptType.instantiate()
 // the purpose of this struct is to prevent the same struct from being created repeatedly, e.g. condition
 type memory struct {
-	singletons map[reflect.Type]map[singletonConcept]bool
+	singletons map[reflect.Type]map[concept]bool
 }
 
-func (m *memory) add(c singletonConcept) singletonConcept {
+func (m *memory) add(c concept) concept {
 	if existing := m.find(c); existing != nil {
 		return existing
 	}
 
 	cType := reflect.TypeOf(c)
 	if _, seen := m.singletons[cType]; !seen {
-		m.singletons[cType] = map[singletonConcept]bool{}
+		m.singletons[cType] = map[concept]bool{}
 	}
 
 	m.singletons[cType][c] = true
 	return c
 }
 
-func (m *memory) find(c singletonConcept) singletonConcept {
+func (m *memory) find(c concept) concept {
 	for singleton := range m.singletons[reflect.TypeOf(c)] {
 		if singleton.match(c) {
 			return singleton
@@ -34,7 +34,7 @@ func (m *memory) find(c singletonConcept) singletonConcept {
 	return nil
 }
 
-func (m *memory) remove(c singletonConcept) {
+func (m *memory) remove(c concept) {
 	if m.find(c) != nil {
 		delete(m.singletons[reflect.TypeOf(c)], c)
 	}
@@ -42,6 +42,6 @@ func (m *memory) remove(c singletonConcept) {
 
 func newMemory() *memory {
 	return &memory{
-		singletons: map[reflect.Type]map[singletonConcept]bool{},
+		singletons: map[reflect.Type]map[concept]bool{},
 	}
 }

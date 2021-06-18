@@ -11,7 +11,7 @@ type agentCondition struct {
 	positive bool
 }
 
-func (c *agentCondition) toString(indent string, indentFirstLine bool) string {
+func (c *agentCondition) toString(indent string, _, indentFirstLine bool) string {
 	result := ""
 	if indentFirstLine {
 		result += indent
@@ -39,7 +39,7 @@ func (c *agentCondition) isSatisfied(a *Agent) bool {
 	return false
 }
 
-func (c *agentCondition) match(other singletonConcept) bool {
+func (c *agentCondition) match(other concept) bool {
 	if o, ok := other.(*agentCondition); ok {
 		return c.stateType == o.stateType && c.positive == o.positive
 	}
