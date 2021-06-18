@@ -4,11 +4,15 @@ import (
 	"github.com/z24tao/sapphire_core/world"
 )
 
+// activity - Active actions and atomic action types
 type activity struct {
 	atomicActionInterfaces map[*world.AtomicActionInterface]*atomicActionType
 	activeActions          []action
 }
 
+//TODO: figure out what this does...
+
+// newActivity -
 func newActivity(a *Agent) *activity {
 	newAAIs := world.NewAAIs(a.unitId)
 

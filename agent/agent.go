@@ -2,6 +2,7 @@ package agent
 
 import (
 	"fmt"
+	"github.com/z24tao/sapphire_core/config"
 	"github.com/z24tao/sapphire_core/util"
 	"github.com/z24tao/sapphire_core/world"
 	"math/rand"
@@ -302,10 +303,13 @@ func (a *Agent) updateActionCausations() {
 		a.buildConditionalActions(ac)
 	}
 
-	//fmt.Println(len(a.mind.changes), "changes")
-	//for _, ch := range a.mind.changes {
-	//	fmt.Println(ch.toString("", true, true))
-	//}
+	if config.Cfg.DebugMindChanges {
+		fmt.Println(len(a.mind.changes), "changes")
+		for _, ch := range a.mind.changes {
+			fmt.Println(ch.toString("", true, true))
+		}
+	}
+
 	a.mind.changes = make([]change, 0)
 }
 
@@ -373,9 +377,11 @@ func (a *Agent) evaluateActionHypotheses(ac action) {
 	}
 
 	if rand.Intn(10) == 0 {
-		fmt.Println("===== evaluate action hypotheses =====")
-		fmt.Println(ac.getType().toString("", true, true))
-		fmt.Println()
+		if config.Cfg.DebugActionHypotheses {
+			fmt.Println("===== evaluate action hypotheses =====")
+			fmt.Println(ac.getType().toString("", true, true))
+			fmt.Println()
+		}
 		forwardHypotheses, backwardHypotheses := ac.getType().getHypotheses()
 		for _, row := range forwardHypotheses {
 			for _, h := range row {

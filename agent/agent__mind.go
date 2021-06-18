@@ -7,12 +7,15 @@ import (
 
 const mindCapacity = 100
 
+// mind - Agent's mind.
+// Currently holds thoughts, newThoughts, and list of changes.
 type mind struct {
 	thoughts    map[concept]float64
 	newThoughts map[concept][]float64
 	changes     []change
 }
 
+// objects - Parses through the mind's thoughts for objects and returns a list of objects.
 func (m *mind) objects() []object {
 	var items []object
 	for t := range m.thoughts {
@@ -24,6 +27,7 @@ func (m *mind) objects() []object {
 	return items
 }
 
+// objectTypes - Parses through the mind's thoughts for objectTypes and returns a list of objectTypes.
 func (m *mind) objectTypes() []objectType {
 	var items []objectType
 
@@ -36,6 +40,7 @@ func (m *mind) objectTypes() []objectType {
 	return items
 }
 
+// actions - Parses through the mind's thoughts for actions and returns a list of actions.
 func (m *mind) actions() []action {
 	var items []action
 
@@ -48,6 +53,7 @@ func (m *mind) actions() []action {
 	return items
 }
 
+// actionTypes - Parses through the mind's thoughts for actionTypes and returns a list of actionTypes.
 func (m *mind) actionTypes() []actionType {
 	var items []actionType
 
@@ -60,6 +66,7 @@ func (m *mind) actionTypes() []actionType {
 	return items
 }
 
+// addItem - Adds a concept to the mind with a given importance as a newThought.
 func (m *mind) addItem(c concept, importance float64) {
 	for existingThought := range m.newThoughts {
 		if existingThought.match(c) {
@@ -71,11 +78,13 @@ func (m *mind) addItem(c concept, importance float64) {
 	m.newThoughts[c] = []float64{importance}
 }
 
+// spawnThoughts - Generate thoughts related to current existing thoughts as well as spontaneous new thoughts.
 func (m *mind) spawnThoughts() {
 	m.spawnRelatedThoughts()
 	m.spawnSpontaneousThoughts()
 }
 
+// spawnRelatedThoughts - Generate thoughts related to existing thoughts.
 func (m *mind) spawnRelatedThoughts() {
 	for thoughtConcept, thoughtImportance := range m.thoughts {
 		for assoc, assocStrength := range thoughtConcept.getAssocs() {
@@ -84,10 +93,14 @@ func (m *mind) spawnRelatedThoughts() {
 	}
 }
 
+// TODO: Complete spawnSpontaneousThoughts
+
+// spawnSpontaneousThoughts -
 func (m *mind) spawnSpontaneousThoughts() {
 	// do nothing for now
 }
 
+// mergeNewThoughts - Compare new thoughts and old thoughts and merge importance of thoughts if pre-existing.
 func (m *mind) mergeNewThoughts() {
 	newThoughts := make(map[concept]float64)
 	for newConcept, newImportances := range m.newThoughts {
@@ -104,11 +117,14 @@ func (m *mind) mergeNewThoughts() {
 	m.filterThoughts()
 }
 
+// sortableThought - Structure to hold thoughts to sport by importance.
 type sortableThought struct {
 	c          concept
 	importance float64
 }
 
+// filterThoughts - Sort thoughts by importance and remove non-important thoughts.
+// Currently removes until there are <= mindCapacity thoughts. Possible TODO: Different way of filtering
 func (m *mind) filterThoughts() {
 	thoughtList := make([]sortableThought, 0)
 	for c, importance := range m.thoughts {
@@ -131,6 +147,7 @@ func (m *mind) filterThoughts() {
 	}
 }
 
+// toString - Debug only function.
 func (m *mind) toString() string {
 	result := "thoughts: [\n"
 	for c, i := range m.thoughts {
@@ -140,6 +157,7 @@ func (m *mind) toString() string {
 	return result
 }
 
+// newMind - New instance of mind.
 func newMind() *mind {
 	return &mind{
 		thoughts:    map[concept]float64{},
