@@ -20,13 +20,8 @@ type Agent struct {
 	unitId   int
 }
 
-//var learned = 3000
-
 // TimeStep - One unit of time passing: updates Agent state, observes environment, and acts.
 func (a *Agent) TimeStep() {
-	//if learned > 0 {
-	//	learned--
-	//}
 	a.updateState()
 	a.observe() // observe and learn
 	a.act()     // think and act
