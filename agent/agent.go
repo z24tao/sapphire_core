@@ -11,6 +11,7 @@ const imageDefaultImportance = 0.5
 const changeDefaultImportance = 0.3
 const curiosityValue = 50.0
 
+// Agent - Singular Actor.
 type Agent struct {
 	state    *agentState
 	mind     *mind
@@ -21,6 +22,7 @@ type Agent struct {
 
 //var learned = 3000
 
+// TimeStep - One unit of time passing: updates Agent state, observes environment, and acts.
 func (a *Agent) TimeStep() {
 	//if learned > 0 {
 	//	learned--
@@ -33,6 +35,7 @@ func (a *Agent) TimeStep() {
 	//fmt.Println("learned", learned)
 }
 
+// updateState - Updates the state of agent.
 func (a *Agent) updateState() {
 	for stateKey, stateVal := range a.state.states {
 		if stateInfo, seen := agentStateInfos[stateKey]; seen {
@@ -43,7 +46,7 @@ func (a *Agent) updateState() {
 	}
 }
 
-// observe section
+// observe - The Agent perceives the environment (discrete).
 func (a *Agent) observe() {
 	imgs := world.Look(a.unitId)
 	for _, img := range imgs {
@@ -52,6 +55,7 @@ func (a *Agent) observe() {
 	a.updateActionCausations()
 }
 
+// processImage - Process the environment attributes and objects, add to mind if applicable.
 func (a *Agent) processImage(img *world.Image) {
 	attrs := a.identifyAttributes(img)
 	obj := a.identifyObjectInst(attrs)
@@ -61,6 +65,8 @@ func (a *Agent) processImage(img *world.Image) {
 	}
 }
 
+// identifyAttributes - Identifies Attributes of the world image:
+// Includes: Color, Shape, Distance (X + Z), Direction (X , Z).
 func (a *Agent) identifyAttributes(img *world.Image) map[int]int {
 	attrs := make(map[int]int)
 
@@ -91,6 +97,7 @@ func (a *Agent) identifyAttributes(img *world.Image) map[int]int {
 	return attrs
 }
 
+// identifyObjectInst - Match object instance in environment to object instance existing in mind based on attributes.
 func (a *Agent) identifyObjectInst(attrs map[int]int) object {
 	mindObjs := a.mind.objects()
 	for _, obj := range mindObjs {
@@ -104,6 +111,7 @@ func (a *Agent) identifyObjectInst(attrs map[int]int) object {
 	return nil
 }
 
+// createObject - Instantiates a new Object type if not exists, then creates an instance in mind.
 func (a *Agent) createObject(attrs map[int]int, debugName string) {
 	newType := a.identifyObjectType(attrs)
 	if newType == nil {
@@ -113,6 +121,8 @@ func (a *Agent) createObject(attrs map[int]int, debugName string) {
 	a.createObjectInst(attrs, newType)
 }
 
+// identifyObjectType - Create a new temporary object type and attempts to match with existing object type.
+// Return existing otherwise nil.
 func (a *Agent) identifyObjectType(attrs map[int]int) objectType {
 	mindObjTypes := a.mind.objectTypes()
 	challengeObjType := a.newSimpleObjectType("")
@@ -128,6 +138,8 @@ func (a *Agent) identifyObjectType(attrs map[int]int) objectType {
 	return nil
 }
 
+// createObjectType - Creates a new Simple Object Type and adds it to mind with imageDefaultImportance.
+// Uses Color, Shape
 func (a *Agent) createObjectType(attrs map[int]int, debugName string) objectType {
 	objType := a.newSimpleObjectType(debugName)
 	for attrType, attrVal := range attrs {
@@ -140,6 +152,7 @@ func (a *Agent) createObjectType(attrs map[int]int, debugName string) objectType
 	return objType
 }
 
+// createObjectInst - Instantiates a new object instance and adds it to mind.
 func (a *Agent) createObjectInst(attrs map[int]int, newType objectType) object {
 	newInst := newType.instantiate().(object)
 	newInst.setAttrs(a, attrs)
@@ -147,7 +160,7 @@ func (a *Agent) createObjectInst(attrs map[int]int, newType objectType) object {
 	return newInst
 }
 
-// act section
+// act - Agent action cycle: spawn, process thoughts -> start action.
 func (a *Agent) act() {
 	// assumes every object visited during observe is already in mind with importance
 	// uses object information and changes to update activity
@@ -157,6 +170,8 @@ func (a *Agent) act() {
 	a.stepActions()
 }
 
+// startNewAction - Chooses action and begins it.
+// Defaults to highest value action that is not currently being done.
 func (a *Agent) startNewAction() {
 	actionTypes := a.mind.actionTypes()
 
@@ -222,6 +237,7 @@ func (a *Agent) startNewAction() {
 	}
 }
 
+// stepActions - Check status of actions taken in step, removes Idle or Done actions.
 func (a *Agent) stepActions() {
 	// actions that are still active after current step
 	filteredActions := make([]action, 0)
@@ -246,6 +262,7 @@ func (a *Agent) stepActions() {
 	a.activity.activeActions = filteredActions
 }
 
+// recordActionChanges - Saves current changes of mind into culminate changes.
 func (a *Agent) recordActionChanges(changes []change) {
 	a.mind.changes = append(a.mind.changes, changes...)
 }
@@ -287,6 +304,7 @@ func (a *Agent) updateActionCausations() {
 	a.mind.changes = make([]change, 0)
 }
 
+// buildActionHypotheses - generate atomic action hypotheses for conditional actions.
 func (a *Agent) buildActionHypotheses(ac action) {
 	// for now, only allow hypotheses on atomic actions
 	if _, ok := ac.(*atomicAction); !ok {
@@ -342,7 +360,7 @@ func (a *Agent) buildActionHypotheses(ac action) {
 	}
 }
 
-// only for printing for now
+// evaluateActionHypotheses - evaluate atomic action hypotheses for conditions and causation.
 func (a *Agent) evaluateActionHypotheses(ac action) {
 	// for now, only allow hypotheses on atomic actions
 	if _, ok := ac.(*atomicAction); !ok {
@@ -367,6 +385,7 @@ func (a *Agent) evaluateActionHypotheses(ac action) {
 	}
 }
 
+// buildConditionalActions - Using hypotheses, generate conditional actions.
 func (a *Agent) buildConditionalActions(ac action) {
 	// for now, only allow hypotheses on atomic actions
 	if _, ok := ac.(*atomicAction); !ok {
@@ -385,6 +404,7 @@ func (a *Agent) buildConditionalActions(ac action) {
 	}
 }
 
+// processActionResponse - Processes environment response to action previously taken.
 func (a *Agent) processActionResponse(response interface{}) {
 	if taste, ok := response.(*world.Taste); ok {
 		a.processTaste(taste)
@@ -393,6 +413,7 @@ func (a *Agent) processActionResponse(response interface{}) {
 	}
 }
 
+// processTaste - Updates agent state hunger and taste.
 func (a *Agent) processTaste(taste *world.Taste) {
 	a.state.update(agentStateTypeHunger, -taste.Nutrition)
 	if taste.Sweet {
@@ -400,11 +421,12 @@ func (a *Agent) processTaste(taste *world.Taste) {
 	}
 }
 
+// processAAIChange - records action changes for atomic actions.
 func (a *Agent) processAAIChange(c *world.AtomicActionInterfaceChange) {
 	a.recordActionChanges([]change{a.newAAIChange(a.activity.atomicActionInterfaces[c.Interface], c.Enabling)})
 }
 
-// state section
+// getConditions - Returns conditions of Agent and objects in mind.
 func (a *Agent) getConditions() map[condition]bool {
 	result := map[condition]bool{}
 
@@ -429,6 +451,7 @@ func (a *Agent) getConditions() map[condition]bool {
 	return result
 }
 
+// NewAgent - New instance of Agent Actor
 func NewAgent() *Agent {
 	a := &Agent{
 		mind:   newMind(),
