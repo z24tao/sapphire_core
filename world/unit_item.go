@@ -127,6 +127,7 @@ func newBlueberry() int {
 
 func addRandomItem(itemId int) {
 	xLen, zLen := len(defaultBoard.tiles), len(defaultBoard.tiles[0])
-	for defaultBoard.addUnitAt(units[itemId], [2]int{rand.Intn(xLen-2) + 1, rand.Intn(zLen-2) + 1}) == false {}
+	for defaultBoard.addUnitAt(units[itemId], [2]int{rand.Intn(xLen-2) + 1, rand.Intn(zLen-2) + 1}) == false {
+	}
 
 }

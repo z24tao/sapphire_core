@@ -87,7 +87,7 @@ func (b *board) unitEat(u unit) []interface{} {
 	var response []interface{}
 	eatenItem := t.occupants[unitTypeItem]
 	if eatenItem != nil {
-		fmt.Println("ate", eatenItem._name() , "at", b.units[u][0], b.units[u][1])
+		fmt.Println("ate", eatenItem._name(), "at", b.units[u][0], b.units[u][1])
 		response = eatenItem._eatenResponse()
 		b.removeUnit(eatenItem)
 
