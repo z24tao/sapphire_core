@@ -4,7 +4,11 @@ type emptyAction struct {
 	*commonAction
 }
 
-func (a *emptyAction) toString(indent string, indentFirstLine bool) string {
+func (a *emptyAction) match(_ concept) bool {
+	return false
+}
+
+func (a *emptyAction) toString(indent string, _, indentFirstLine bool) string {
 	result := ""
 	if indentFirstLine {
 		result += indent

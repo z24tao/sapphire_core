@@ -8,13 +8,13 @@ type causation struct {
 	occurrences int
 }
 
-func (c *causation) toString(indent string, indentFirstLine bool) string {
+func (c *causation) toString(indent string, recursive, indentFirstLine bool) string {
 	result := ""
 	if indentFirstLine {
 		result += indent
 	}
 	result += fmt.Sprintf("causation occurrences: %d,", c.occurrences)
-	result += fmt.Sprintf(" change: %s", c.change.toString(indent+"  ", false))
+	result += fmt.Sprintf(" change: %s", c.change.toString(indent+"  ", recursive, false))
 	return result
 }
 

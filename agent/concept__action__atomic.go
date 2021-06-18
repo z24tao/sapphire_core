@@ -9,6 +9,10 @@ type atomicAction struct {
 	actionType *atomicActionType
 }
 
+func (a *atomicAction) match(_ concept) bool {
+	return false
+}
+
 func (a *atomicAction) getType() actionType {
 	return a.actionType
 }
@@ -25,7 +29,6 @@ func (a *atomicAction) start(agent *Agent) bool {
 	}
 
 	a.state = actionStateActive
-	a.actionType.attempts++
 	return true
 }
 
@@ -63,7 +66,7 @@ func (a *atomicAction) stop(agent *Agent) bool {
 	return true
 }
 
-func (a *atomicAction) toString(indent string, indentFirstLine bool) string {
+func (a *atomicAction) toString(indent string, _, indentFirstLine bool) string {
 	result := ""
 	if indentFirstLine {
 		result += indent

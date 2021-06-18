@@ -9,7 +9,7 @@ type sequentialActionType struct {
 	isFunction bool
 }
 
-func (t *sequentialActionType) match(other singletonConcept) bool {
+func (t *sequentialActionType) match(other concept) bool {
 	o, ok := other.(*sequentialActionType)
 	if !ok {
 		return false
@@ -20,16 +20,21 @@ func (t *sequentialActionType) match(other singletonConcept) bool {
 		t.isFunction == o.isFunction
 }
 
-func (t *sequentialActionType) toString(indent string, indentFirstLine bool) string {
+func (t *sequentialActionType) toString(indent string, recursive, indentFirstLine bool) string {
 	result := ""
 	if indentFirstLine {
 		result += indent
 	}
-	result += fmt.Sprintf("conditionalActionType\n")
-	result += fmt.Sprintf(" first: %s\n", t.first.toString(indent+"  ", false))
-	result += fmt.Sprintf(" next: %s\n", t.next.toString(indent+"  ", false))
+	result += fmt.Sprintf("sequentialActionType\n")
+	result += fmt.Sprintf(" first: %s\n", t.first.toString(indent+"  ", recursive, false))
+	result += fmt.Sprintf(" next: %s\n", t.next.toString(indent+"  ", recursive, false))
 	result += fmt.Sprintf(" value: %.2f", actionTypeValue(t))
-	result += t.commonActionType.toString(indent, indentFirstLine)
+
+	if !recursive {
+		return result
+	}
+
+	result += t.commonActionType.toString(indent, false, indentFirstLine)
 	return result
 }
 

@@ -12,7 +12,11 @@ type conditionalAction struct {
 	passed     bool
 }
 
-func (a *conditionalAction) toString(indent string, indentFirstLine bool) string {
+func (a *conditionalAction) match(_ concept) bool {
+	return false
+}
+
+func (a *conditionalAction) toString(indent string, recursive, indentFirstLine bool) string {
 	result := ""
 	if indentFirstLine {
 		result += indent
@@ -20,7 +24,7 @@ func (a *conditionalAction) toString(indent string, indentFirstLine bool) string
 	result += fmt.Sprintf("conditionalAction")
 	result += fmt.Sprintf(" condition passed: %t", a.passed)
 	result += fmt.Sprintf(" state: %s", actionStates[a.state])
-	result += fmt.Sprintf(" type: %s", a.actionType.toString(indent, indentFirstLine))
+	result += fmt.Sprintf(" type: %s", a.actionType.toString(indent, recursive, indentFirstLine))
 	return result
 }
 
@@ -41,7 +45,6 @@ func (a *conditionalAction) start(agent *Agent) bool {
 
 	a.passed = a.actionType.condition.isSatisfied(agent)
 	a.state = actionStateActive
-	a.actionType.attempts++
 	return true
 }
 

@@ -5,10 +5,16 @@ package agent
 	across information category, i.e. seeing <an object> reminds me of <an action>.
 */
 type concept interface {
-	addAssoc(other singletonConcept, strength float64)
-	getAssocs() map[concept]float64 // associated concept -> association strength
-	//deprecate()                                          // delete all assocs from self, and delete self from all assocs
-	toString(indent string, indentFirstLine bool) string // used for debug
+	// associated concept -> association strength
+	getAssocs() map[concept]float64
+	addAssoc(other concept, strength float64)
+	match(other concept) bool
+
+	// delete all assocs from self, and delete self from all assocs
+	deprecate()
+
+	// used for debug
+	toString(indent string, recursive, indentFirstLine bool) string
 }
 
 /*
@@ -20,16 +26,16 @@ type concept interface {
 	Person B: "I would assume it is sweet."
 */
 type conceptType interface {
-	singletonConcept
+	concept
 	instantiate() concept // create instance from type
 }
 
 // the purpose of this struct is to remove duplicated code from implementations
 type commonConcept struct {
-	assocs map[singletonConcept]float64
+	assocs map[concept]float64
 }
 
-func (c *commonConcept) addAssoc(other singletonConcept, strength float64) {
+func (c *commonConcept) addAssoc(other concept, strength float64) {
 	for existingAssoc := range c.assocs {
 		if existingAssoc.match(other) {
 			if c.assocs[existingAssoc] < strength {
@@ -58,15 +64,18 @@ func (c *commonConcept) deprecate() {
 	}
 }
 
-//
-// this function exists for commonConcept to implement concept, in order to allow deprecate to access concept assocs,
+// these functions exists for commonConcept to implement concept, in order to allow deprecate to access concept assocs,
 //   should not be called directly
-func (c *commonConcept) toString(indent string, indentFirstLine bool) string {
-	return ""
+func (c *commonConcept) match(_ concept) bool {
+	panic("implement me")
+}
+
+func (c *commonConcept) toString(_ string, _, _ bool) string {
+	panic("implement me")
 }
 
 func newCommonConcept() *commonConcept {
 	return &commonConcept{
-		assocs: map[singletonConcept]float64{}, // associated concept -> association strength
+		assocs: map[concept]float64{}, // associated concept -> association strength
 	}
 }

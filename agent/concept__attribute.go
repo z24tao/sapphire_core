@@ -36,7 +36,7 @@ var attrTypes = map[int]string{
 	attrTypeColor:     "color",
 	attrTypeShape:     "shape",
 	attrTypeDirection: "direction",
-	attrTypeDistance: "distance",
+	attrTypeDistance:  "distance",
 }
 
 // type -> value -> name
