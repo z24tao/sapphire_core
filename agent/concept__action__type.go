@@ -82,9 +82,9 @@ func (t *commonActionType) getHypotheses() (map[condition]map[change]*hypothesis
 	return t.forwardHypotheses, t.backwardHypotheses
 }
 
-func newCommonActionType() *commonActionType {
+func (a *Agent) newCommonActionType() *commonActionType {
 	t := &commonActionType{
-		commonConcept:      newCommonConcept(),
+		commonConcept:      a.newCommonConcept(),
 		conditions:         map[int]map[condition]bool{}, // condition type enum -> set of conditions
 		causations:         map[*causation]bool{},        // set of causations
 		attempts:           0,
@@ -101,7 +101,7 @@ func newCommonActionType() *commonActionType {
 
 // the expected value of taking this action once
 func actionTypeValue(t actionType) float64 {
-	curiosityBase := rand.Float64() * 30
+	curiosityBase := rand.Float64() * 10
 	//if learned == 0 {
 	//	curiosityBase = rand.Float64() * 1
 	//}

@@ -51,13 +51,13 @@ func (c *quantitativeAttributeChange) precedes(other change) bool {
 
 func (a *Agent) newQuantitativeAttributeChange(t objectType, attrType int, increase bool) *quantitativeAttributeChange {
 	c := &quantitativeAttributeChange{
-		commonChange: newCommonChange(),
+		commonChange: a.newCommonChange(),
 		objectType:   t,
 		attrType:     attrType,
 		increase:     increase,
 	}
 
-	c.value = 20 // TODO DELETE HARDCODED VALUE
+	c.value = 10 // TODO DELETE HARDCODED VALUE
 	if c.increase {
 		c.value = 0
 	}

@@ -52,7 +52,7 @@ func (c *qualitativeAttributeChange) precedes(other change) bool {
 
 func (a *Agent) newQualitativeAttributeChange(t objectType, attrType, oldVal, newVal int) *qualitativeAttributeChange {
 	c := &qualitativeAttributeChange{
-		commonChange:    newCommonChange(),
+		commonChange:    a.newCommonChange(),
 		objectType:      t,
 		attrType:        attrType,
 		oldVal:          oldVal,

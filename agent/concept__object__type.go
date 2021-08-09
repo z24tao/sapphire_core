@@ -38,9 +38,9 @@ func (t *commonObjectType) match(other concept) bool {
 	return true
 }
 
-func newCommonObjectType() *commonObjectType {
+func (a *Agent) newCommonObjectType() *commonObjectType {
 	return &commonObjectType{
-		commonConcept: newCommonConcept(),
+		commonConcept: a.newCommonConcept(),
 		attrs:         map[int]int{},
 	}
 }

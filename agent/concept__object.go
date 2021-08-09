@@ -75,9 +75,9 @@ func (o *commonObject) matchAttrs(newAttrs map[int]int, consideredAttrTypes map[
 	return true
 }
 
-func newCommonObject() *commonObject {
+func (a *Agent) newCommonObject() *commonObject {
 	return &commonObject{
-		commonConcept: newCommonConcept(),
+		commonConcept: a.newCommonConcept(),
 		attrs:         map[int]int{},
 	}
 }

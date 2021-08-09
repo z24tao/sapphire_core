@@ -15,8 +15,13 @@ func (t *sequentialActionType) match(other concept) bool {
 		return false
 	}
 
+	// this match could be called during construction, in which case for recursive sequential actions next would be nil,
+	//   after construction the next would be self
 	return t.first.match(o.first) &&
-		t.next.match(o.next) &&
+		((t.next == nil && o.next == o) ||
+			(o.next == nil && t.next == t) ||
+			(o.next == o && t.next == t) ||
+			t.next.match(o.next)) &&
 		t.isFunction == o.isFunction
 }
 
@@ -25,22 +30,22 @@ func (t *sequentialActionType) toString(indent string, recursive, indentFirstLin
 	if indentFirstLine {
 		result += indent
 	}
-	result += fmt.Sprintf("sequentialActionType\n")
-	result += fmt.Sprintf(" first: %s\n", t.first.toString(indent+"  ", recursive, false))
-	result += fmt.Sprintf(" next: %s\n", t.next.toString(indent+"  ", recursive, false))
-	result += fmt.Sprintf(" value: %.2f", actionTypeValue(t))
-
+	result += fmt.Sprintf("sequentialActionType")
 	if !recursive {
 		return result
 	}
 
-	result += t.commonActionType.toString(indent, false, indentFirstLine)
+	result += fmt.Sprintf("\n"+indent+" first: %s\n", t.first.toString(indent+"  ", false, false))
+	result += fmt.Sprintf(indent+" next: %s\n", t.next.toString(indent+"  ", false, false))
+	result += fmt.Sprintf(indent+" value: %.2f", actionTypeValue(t))
+
+	result += t.commonActionType.toString(indent+"  ", false, indentFirstLine)
 	return result
 }
 
 func (t *sequentialActionType) instantiate() concept {
 	a := &sequentialAction{
-		commonAction: newCommonAction(),
+		commonAction: t.agent.newCommonAction(),
 		actionType:   t,
 		first:        t.first.instantiate().(action),
 		doneFirst:    false,
@@ -57,7 +62,7 @@ func (t *sequentialActionType) instantiate() concept {
 
 func (a *Agent) newSequentialActionType(f, n actionType) *sequentialActionType {
 	t := &sequentialActionType{
-		commonActionType: newCommonActionType(),
+		commonActionType: a.newCommonActionType(),
 		first:            f,
 		next:             n,
 	}

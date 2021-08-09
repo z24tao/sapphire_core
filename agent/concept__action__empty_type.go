@@ -20,10 +20,8 @@ func (t *emptyActionType) match(other concept) bool {
 
 func (t *emptyActionType) instantiate() concept {
 	return &emptyAction{
-		commonAction: newCommonAction(),
+		commonAction: t.agent.newCommonAction(),
 	}
 }
 
-var emptyActionTypeSingleton = &emptyActionType{
-	commonActionType: newCommonActionType(),
-}
+var emptyActionTypeSingleton *emptyActionType

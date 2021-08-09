@@ -29,7 +29,7 @@ var agentExperienceInfos = map[int]*agentExperienceInfo{
 
 // agentState - Agent States
 type agentState struct {
-	agent  *Agent
+	agent  *Agent // the agent state has access to the parent agent to surface alerts
 	states map[int]int
 }
 
@@ -88,4 +88,3 @@ func newAgentState(a *Agent) *agentState {
 		states: states,
 	}
 }
-

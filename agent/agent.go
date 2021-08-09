@@ -26,6 +26,10 @@ func (a *Agent) TimeStep() {
 	a.updateState()
 	a.observe() // observe and learn
 	a.act()     // think and act
+
+	if rand.Float64() < 0.01 {
+		fmt.Println(a.mind.toString())
+	}
 }
 
 // updateState - Updates the state of agent.
@@ -94,7 +98,7 @@ func (a *Agent) identifyAttributes(img *world.Image) map[int]int {
 func (a *Agent) identifyObjectInst(attrs map[int]int) object {
 	mindObjs := a.mind.objects()
 	challengeObj := &simpleObject{
-		commonObject: newCommonObject(),
+		commonObject: a.newCommonObject(),
 		objectType:   nil,
 	}
 	challengeObj.attrs = attrs
@@ -179,16 +183,16 @@ func (a *Agent) startNewAction() {
 	var bestActionTypes []actionType
 	for _, t := range actionTypes {
 		isActive := false
-		// if we currently have an active action of this type, we do not want to start this action
+		// if we currently have an active action, we do not want to start a new action
 		for _, ac := range a.activity.activeActions {
-			if ac.getType() == t {
+			if ac.getState() == actionStateActive {
 				isActive = true
 				break
 			}
 		}
 
 		if isActive {
-			continue
+			return
 		}
 
 		// TODO what if an action cannot be started
@@ -233,7 +237,7 @@ func (a *Agent) startNewAction() {
 	for cond := range a.getConditions() {
 		preActionConditions := newAction.getType().getConditions()[actionConditionTypeObservedAtStart]
 		preActionConditions[cond] = true
-		newAction.getPreconditions()[cond] = true
+		newAction.getPreConditions()[cond] = true
 	}
 }
 
@@ -241,8 +245,12 @@ func (a *Agent) startNewAction() {
 func (a *Agent) stepActions() {
 	// actions that are still active after current step
 	filteredActions := make([]action, 0)
+
+	var prevAc, currAc action
+
 	for _, ac := range a.activity.activeActions {
 		if ac.getState() == actionStateDone {
+			prevAc = ac
 			continue
 		}
 
@@ -256,12 +264,22 @@ func (a *Agent) stepActions() {
 
 		if ac.getState() == actionStateActive {
 			ac.step(a)
+			currAc = ac
+
+			if ac.getState() == actionStateDone {
+				acPostConds := ac.getPostConditions()
+				for cond := range a.getConditions() {
+					acPostConds[cond] = true
+				}
+				ac.buildCausations()
+			}
 		}
 
 		filteredActions = append(filteredActions, ac)
 	}
 
 	a.activity.activeActions = filteredActions
+	a.buildSequentialActions(prevAc, currAc)
 }
 
 // recordActionChanges - Saves current changes of mind into culminate changes.
@@ -286,7 +304,7 @@ func (a *Agent) updateActionCausations() {
 				}
 			}
 			if !matched {
-				actionCausations[newCausation(c, ac.getType())] = true
+				actionCausations[a.newCausation(c, ac.getType())] = true
 			}
 		}
 
@@ -321,7 +339,7 @@ func (a *Agent) buildActionHypotheses(ac action) {
 	}
 
 	forwardHypotheses, backwardHypotheses := ac.getType().getHypotheses()
-	preconditions := ac.getPreconditions()
+	preconditions := ac.getPreConditions()
 	for cond := range preconditions {
 		if _, seen := forwardHypotheses[cond]; !seen {
 			forwardHypotheses[cond] = map[change]*hypothesis{}
@@ -421,6 +439,47 @@ func (a *Agent) buildConditionalActions(ac action) {
 	}
 }
 
+func (a *Agent) buildSequentialActions(prevAc, currAc action) {
+	if prevAc == nil || currAc == nil {
+		return
+	}
+	// build sequential actions if:
+	//   - two actions reliably (at least 5 attempts, at least 90% success) cause the same quantitative change
+	//   - prev action reliably cause a change, the after condition of which matches a start condition of curr action
+	prevAttempts := prevAc.getType().getAttempts()
+	currAttempts := currAc.getType().getAttempts()
+	if prevAttempts < 5 || currAttempts < 5 {
+		return
+	}
+
+	prevCausations := prevAc.getType().getCausations()
+	currCausations := currAc.getType().getCausations()
+	for prevCausation := range prevCausations {
+		if prevCausation.occurrences*10/9 < prevAttempts {
+			return
+		}
+
+		for currCausation := range currCausations {
+			if currCausation.occurrences*10/9 < currAttempts {
+				return
+			}
+
+			// if the changes match and is quantitative, build self-recursive sequential action
+			if prevCausation.change.match(currCausation.change) {
+				if _, ok := prevCausation.change.(*quantitativeAttributeChange); ok {
+					sa := a.newSequentialActionType(currAc.getType(), nil)
+					sa.next = sa
+
+					for cond := range currAc.getType().getConditions()[actionConditionTypeStart] {
+						sa.getConditions()[actionConditionTypeStart][cond] = true
+					}
+					a.mind.addItem(sa, 1.0)
+				}
+			}
+		}
+	}
+}
+
 // processActionResponse - Processes environment response to action previously taken.
 func (a *Agent) processActionResponse(response interface{}) {
 	if taste, ok := response.(*world.Taste); ok {
@@ -478,6 +537,11 @@ func NewAgent() *Agent {
 
 	a.activity = newActivity(a)
 	a.state = newAgentState(a)
+
+	emptyActionTypeSingleton = &emptyActionType{
+		commonActionType: a.newCommonActionType(),
+	}
+
 	return a
 }
 

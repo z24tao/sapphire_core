@@ -23,9 +23,9 @@ func (c *commonChange) setValue(value float64) {
 	c.value = value
 }
 
-func newCommonChange() *commonChange {
+func (a *Agent) newCommonChange() *commonChange {
 	return &commonChange{
-		commonConcept: newCommonConcept(),
+		commonConcept: a.newCommonConcept(),
 		value:         0,
 	}
 }

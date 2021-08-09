@@ -12,7 +12,7 @@ type atomicActionType struct {
 
 func (t *atomicActionType) instantiate() concept {
 	return &atomicAction{
-		commonAction: newCommonAction(),
+		commonAction: t.agent.newCommonAction(),
 		actionType:   t,
 	}
 }
@@ -39,13 +39,13 @@ func (t *atomicActionType) toString(indent string, recursive, indentFirstLine bo
 
 	result += fmt.Sprintf(" enabled: %t,", t.aai.Enabled)
 	result += fmt.Sprintf(" value: %.2f,", actionTypeValue(t))
-	result += t.commonActionType.toString(indent, false, indentFirstLine)
+	result += t.commonActionType.toString(indent+"  ", false, indentFirstLine)
 	return result
 }
 
 func (a *Agent) newAtomicActionType(aai *world.AtomicActionInterface) *atomicActionType {
 	t := &atomicActionType{
-		commonActionType: newCommonActionType(),
+		commonActionType: a.newCommonActionType(),
 		aai:              aai,
 	}
 

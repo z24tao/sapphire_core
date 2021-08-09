@@ -59,7 +59,7 @@ func (c *agentChange) precedes(change) bool {
 
 func (a *Agent) newAgentChange(stateType, deltaVal int) *agentChange {
 	c := &agentChange{
-		commonChange: newCommonChange(),
+		commonChange: a.newCommonChange(),
 		stateType:    stateType,
 		deltaVal:     deltaVal,
 	}

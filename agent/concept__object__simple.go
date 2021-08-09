@@ -12,17 +12,17 @@ func (o *simpleObject) toString(indent string, _, indentFirstLine bool) string {
 	if indentFirstLine {
 		result += indent
 	}
-	result += fmt.Sprintf("simpleObject: %s,", o.objectType.debugName)
-	result += fmt.Sprintf(" attributes: (%d) [\n", len(o.attrs))
+	result += fmt.Sprintf("simpleObject: %s\n", o.objectType.debugName)
+	result += fmt.Sprintf(indent+"  attributes: (%d) [\n", len(o.attrs))
 
 	for attrType, attrVal := range o.attrs {
 		if qualitativeAttrTypes[attrType] {
-			result += fmt.Sprintf(indent+"  %s: %s\n", attrTypes[attrType], attrVals[attrType][attrVal])
+			result += fmt.Sprintf(indent+"    %s: %s\n", attrTypes[attrType], attrVals[attrType][attrVal])
 		} else {
-			result += fmt.Sprintf(indent+"  %s: %d\n", attrTypes[attrType], attrVal)
+			result += fmt.Sprintf(indent+"    %s: %d\n", attrTypes[attrType], attrVal)
 		}
 	}
-	result += indent + "]"
+	result += indent + "  ]"
 
 	return result
 }

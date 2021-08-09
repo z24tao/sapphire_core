@@ -31,6 +31,8 @@ func (a *sequentialAction) getType() actionType {
 }
 
 func (a *sequentialAction) start(agent *Agent) bool {
+	//fmt.Println("sequential action start")
+	//fmt.Println(a.actionType.toString("", true, true))
 	if a.state != actionStateIdle {
 		return false
 	}
@@ -47,6 +49,7 @@ func (a *sequentialAction) start(agent *Agent) bool {
 }
 
 func (a *sequentialAction) step(agent *Agent) {
+	//fmt.Println("sequential action step")
 	if a.state != actionStateActive {
 		return
 	}
@@ -109,4 +112,31 @@ func (a *sequentialAction) stop(agent *Agent) bool {
 	}
 
 	return true
+}
+
+func (a *sequentialAction) buildCausations() {
+	actionCausations := a.getType().getCausations()
+	var changes []change
+
+	for preCond := range a.preConditions {
+		for postCond := range a.postConditions {
+			newChanges := preCond.buildChanges(postCond)
+			changes = append(changes, newChanges...)
+		}
+	}
+
+	for _, c := range changes {
+		matched := false
+		for currCausation := range actionCausations {
+			if currCausation.change.match(c) {
+				matched = true
+				currCausation.occurrences++
+				break
+			}
+		}
+
+		if !matched {
+			actionCausations[a.agent.newCausation(c, a.getType())] = true
+		}
+	}
 }

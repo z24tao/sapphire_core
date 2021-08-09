@@ -25,23 +25,23 @@ func (t *conditionalActionType) toString(indent string, recursive, indentFirstLi
 	if indentFirstLine {
 		result += indent
 	}
-	result += fmt.Sprintf("conditionalActionType")
-	result += fmt.Sprintf(" condition: %s\n", t.condition.toString(indent+"  ", recursive, false))
-	result += fmt.Sprintf(indent+"  passActionType: %s\n", t.passActionType.toString(indent+"  ", recursive, false))
-	result += fmt.Sprintf(indent+"  failActionType: %s\n", t.failActionType.toString(indent+"  ", recursive, false))
+	result += fmt.Sprintf("conditionalActionType\n")
+	result += fmt.Sprintf(indent+"  condition: %s\n", t.condition.toString(indent+"  ", false, false))
+	result += fmt.Sprintf(indent+"  passActionType: %s\n", t.passActionType.toString(indent+"  ", false, false))
+	result += fmt.Sprintf(indent+"  failActionType: %s\n", t.failActionType.toString(indent+"  ", false, false))
 	result += fmt.Sprintf(indent+"  value: %.2f", actionTypeValue(t))
 
 	if !recursive {
 		return result
 	}
 
-	result += t.commonActionType.toString(indent, false, indentFirstLine)
+	result += t.commonActionType.toString(indent+"  ", false, indentFirstLine)
 	return result
 }
 
 func (t *conditionalActionType) instantiate() concept {
 	return &conditionalAction{
-		commonAction: newCommonAction(),
+		commonAction: t.agent.newCommonAction(),
 		actionType:   t,
 		passAction:   t.passActionType.instantiate().(action),
 		failAction:   t.failActionType.instantiate().(action),
@@ -51,7 +51,7 @@ func (t *conditionalActionType) instantiate() concept {
 
 func (a *Agent) newConditionalActionType(c condition, p, f actionType) *conditionalActionType {
 	t := &conditionalActionType{
-		commonActionType: newCommonActionType(),
+		commonActionType: a.newCommonActionType(),
 		condition:        c,
 		passActionType:   p,
 		failActionType:   f,

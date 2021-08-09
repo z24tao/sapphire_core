@@ -18,9 +18,9 @@ func (c *causation) toString(indent string, recursive, indentFirstLine bool) str
 	return result
 }
 
-func newCausation(change change, actionType actionType) *causation {
+func (a *Agent) newCausation(change change, actionType actionType) *causation {
 	c := &causation{
-		commonConcept: newCommonConcept(),
+		commonConcept: a.newCommonConcept(),
 		change:        change,
 		occurrences:   1,
 	}

@@ -31,15 +31,18 @@ type action interface {
 	stop(agent *Agent) bool // returns success
 	getState() int
 	getOutcome() *actionOutcome
-	getPreconditions() map[condition]bool
+	getPreConditions() map[condition]bool
+	getPostConditions() map[condition]bool
+	buildCausations() // for multi-step actions to build causations using preConditions and postConditions
 }
 
 // the purpose of this struct is to remove duplicated code from implementations
 type commonAction struct {
 	*commonConcept
-	state         int
-	outcome       *actionOutcome
-	preconditions map[condition]bool
+	state          int
+	outcome        *actionOutcome
+	preConditions  map[condition]bool
+	postConditions map[condition]bool
 }
 
 func (a *commonAction) getState() int {
@@ -53,16 +56,25 @@ func (a *commonAction) getOutcome() *actionOutcome {
 	return a.outcome
 }
 
-func (a *commonAction) getPreconditions() map[condition]bool {
-	return a.preconditions
+func (a *commonAction) getPreConditions() map[condition]bool {
+	return a.preConditions
+}
+
+func (a *commonAction) getPostConditions() map[condition]bool {
+	return a.postConditions
+}
+
+func (a *commonAction) buildCausations() {
+
 }
 
 // action instances are constructed in idle state with nil outcome
-func newCommonAction() *commonAction {
+func (a *Agent) newCommonAction() *commonAction {
 	return &commonAction{
-		commonConcept: newCommonConcept(),
-		state:         actionStateIdle,
-		outcome:       nil,
-		preconditions: map[condition]bool{},
+		commonConcept:  a.newCommonConcept(),
+		state:          actionStateIdle,
+		outcome:        nil,
+		preConditions:  map[condition]bool{},
+		postConditions: map[condition]bool{},
 	}
 }

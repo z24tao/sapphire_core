@@ -9,36 +9,41 @@ type simpleObjectType struct {
 	debugName string
 }
 
-func (t *simpleObjectType) toString(indent string, _, indentFirstLine bool) string {
+func (t *simpleObjectType) toString(indent string, recursive, indentFirstLine bool) string {
 	result := ""
 	if indentFirstLine {
 		result += indent
 	}
 	result += fmt.Sprintf("simpleObjectType: %s", t.debugName)
-	result += fmt.Sprintf(" attributes: (%d) [\n", len(t.attrs))
+
+	if !recursive {
+		return result
+	}
+
+	result += fmt.Sprintf("\n"+indent+"  attributes: (%d) [\n", len(t.attrs))
 
 	for attrType, attrVal := range t.attrs {
 		if qualitativeAttrTypes[attrType] {
-			result += fmt.Sprintf(indent+"  %s: %s\n", attrTypes[attrType], attrVals[attrType][attrVal])
+			result += fmt.Sprintf(indent+"    %s: %s\n", attrTypes[attrType], attrVals[attrType][attrVal])
 		} else {
-			result += fmt.Sprintf(indent+"  %s: %d\n", attrTypes[attrType], attrVal)
+			result += fmt.Sprintf(indent+"    %s: %d\n", attrTypes[attrType], attrVal)
 		}
 	}
-	result += indent + "]"
+	result += indent + "  ]"
 
 	return result
 }
 
 func (t *simpleObjectType) instantiate() concept {
 	return &simpleObject{
-		commonObject: newCommonObject(),
+		commonObject: t.agent.newCommonObject(),
 		objectType:   t,
 	}
 }
 
 func (a *Agent) newSimpleObjectType(debugName string) *simpleObjectType {
 	t := &simpleObjectType{
-		commonObjectType: newCommonObjectType(),
+		commonObjectType: a.newCommonObjectType(),
 		debugName:        debugName,
 	}
 

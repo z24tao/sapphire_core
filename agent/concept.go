@@ -32,6 +32,7 @@ type conceptType interface {
 
 // the purpose of this struct is to remove duplicated code from implementations
 type commonConcept struct {
+	agent  *Agent
 	assocs map[concept]float64
 }
 
@@ -74,8 +75,9 @@ func (c *commonConcept) toString(_ string, _, _ bool) string {
 	panic("implement me")
 }
 
-func newCommonConcept() *commonConcept {
+func (a *Agent) newCommonConcept() *commonConcept {
 	return &commonConcept{
+		agent:  a,
 		assocs: map[concept]float64{}, // associated concept -> association strength
 	}
 }

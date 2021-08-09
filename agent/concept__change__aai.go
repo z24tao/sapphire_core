@@ -41,7 +41,7 @@ func (c *aaiChange) match(other concept) bool {
 
 func (a *Agent) newAAIChange(t *atomicActionType, enabling bool) *aaiChange {
 	c := &aaiChange{
-		commonChange: newCommonChange(),
+		commonChange: a.newCommonChange(),
 		actionType:   t,
 		enabling:     enabling,
 	}
